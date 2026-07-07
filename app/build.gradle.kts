@@ -1,5 +1,7 @@
 plugins {
   application
+  id("org.springframework.boot") version "3.5.0"
+  id("io.spring.dependency-management") version "1.1.7"
   id("com.ncorti.ktfmt.gradle")
   kotlin("kapt")
   kotlin("jvm")
@@ -28,6 +30,15 @@ dependencies {
   implementation(project(":lib"))
 
   implementation(kotlin("stdlib-jdk8"))
+
+  // Fory
+  implementation("org.apache.fory:fory-core:0.15.0")
+  implementation("org.apache.fory:fory-kotlin:0.15.0")
+
+  //Dapr
+  implementation("io.dapr:dapr-sdk:1.18.0")
+  implementation("io.dapr:dapr-sdk-actors:1.18.0")
+  implementation("io.dapr:dapr-sdk-springboot:1.18.0")
 
   // Logging
   implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
