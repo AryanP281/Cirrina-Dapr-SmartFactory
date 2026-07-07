@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.smartfactory.actors.belt
 
-import ac.at.uibk.dps.dapr.smartfactory.services.Services
+import at.ac.uibk.dps.smartfactory.services.Services
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
