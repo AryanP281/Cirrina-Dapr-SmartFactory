@@ -68,12 +68,6 @@ class BeltActorImpl (
         registerActorTimer("armPickupTimeout-${id}", "armPickupTimeout", 0, Duration.ofSeconds(0), Duration.ofSeconds(10)).subscribe()
     }
 
-    private fun errorState()
-    {
-        //Raising message
-        daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Belt error: Invalid object detected")).subscribe()
-    }
-
     override fun markObjectValidity()
     {
         transition(BeltActor.States.TRANSPORTING)
@@ -90,13 +84,7 @@ class BeltActorImpl (
 
     override fun markPickedUp()
     {
-        if(currentActiveState == BeltActor.States.UNLOADING)
-        {
-            isUnloading = false
-            daprClient.publishEvent("pubsub", "isUnloading", isUnloading).subscribe()
-
-            transition(BeltActor.States.LOADING)
-        }
+        transition(BeltActor.States.LOADING)
     }
 
     override fun armPickupTimeout() : Mono<Void>
