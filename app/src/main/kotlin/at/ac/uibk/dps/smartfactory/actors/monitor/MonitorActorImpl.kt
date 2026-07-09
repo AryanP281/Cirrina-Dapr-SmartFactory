@@ -22,8 +22,9 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     if (currentActiveState == MonitorActor.States.MONITORING) {
       nScans += 1
 
-      //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
+      // Invoke SendStatistics service
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))
+        .subscribe()
     }
   }
 
@@ -31,8 +32,9 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     if (currentActiveState == MonitorActor.States.MONITORING) {
       nAssemblies += 1
 
-      //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
+      // Invoke SendStatistics service
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))
+        .subscribe()
     }
   }
 
@@ -40,18 +42,20 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     if (currentActiveState == MonitorActor.States.MONITORING) {
       productsCompleted += 1
 
-      //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
+      // Invoke SendStatistics service
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))
+        .subscribe()
     }
   }
 
   override fun markJobDone() {
-    if(currentActiveState == MonitorActor.States.MONITORING) {
+    if (currentActiveState == MonitorActor.States.MONITORING) {
       currentActiveState = MonitorActor.States.JOB_DONE
       jobDone = true
 
-      //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
+      // Invoke SendStatistics service
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))
+        .subscribe()
     }
   }
 }

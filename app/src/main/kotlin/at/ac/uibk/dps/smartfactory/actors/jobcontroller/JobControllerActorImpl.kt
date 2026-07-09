@@ -20,7 +20,7 @@ class JobControllerActorImpl(
   }
 
   override fun markProductCompleted() {
-    if(currActiveState == JobControllerActor.States.RUNNING){
+    if (currActiveState == JobControllerActor.States.RUNNING) {
       productsCompleted += 1
       this.checkJobDone()
     }
@@ -54,7 +54,9 @@ class JobControllerActorImpl(
 
   private fun startingState() {
     // Emit event to Message Processor
-    daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job started...")).subscribe()
+    daprClient
+      .publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job started..."))
+      .subscribe()
 
     // Transition to running state
     transition(JobControllerActor.States.RUNNING)
@@ -65,6 +67,6 @@ class JobControllerActorImpl(
     daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job done...")).subscribe()
 
     // Emit JobDone
-    daprClient.publishEvent("pubsub", "eJobDone", mapOf<String,Any>()).subscribe()
+    daprClient.publishEvent("pubsub", "eJobDone", mapOf<String, Any>()).subscribe()
   }
 }

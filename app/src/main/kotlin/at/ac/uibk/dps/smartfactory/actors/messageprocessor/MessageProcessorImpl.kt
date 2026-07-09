@@ -36,13 +36,13 @@ class MessageProcessorImpl(
   }
 
   override fun processMessage(message: String) {
-    if(currentActiveState == MessageProcessorActor.States.IDLE)
+    if (currentActiveState == MessageProcessorActor.States.IDLE)
       transition(MessageProcessorActor.States.PROCESS, message)
   }
 
   override fun markJobDone() {
-    if(currentActiveState == MessageProcessorActor.States.IDLE)
-    transition(MessageProcessorActor.States.JOB_DONE)
+    if (currentActiveState == MessageProcessorActor.States.IDLE)
+      transition(MessageProcessorActor.States.JOB_DONE)
   }
 
   private fun processState(msg: String) {

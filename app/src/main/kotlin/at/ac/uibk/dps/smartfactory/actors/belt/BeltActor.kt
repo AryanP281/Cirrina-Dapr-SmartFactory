@@ -7,26 +7,20 @@ import reactor.core.publisher.Mono
 @ActorType(name = "Belt")
 interface BeltActor {
 
-    enum class States{
-        LOADING,
-        TRANSPORTING,
-        UNLOADING,
-        JOB_DONE
-    }
+  enum class States {
+    LOADING,
+    TRANSPORTING,
+    UNLOADING,
+    JOB_DONE,
+  }
 
-    @ActorMethod(name = "markObjectValidity")
-    fun markObjectValidity()
+  @ActorMethod(name = "markObjectValidity") fun markObjectValidity()
 
-    @ActorMethod(name="startUnloading")
-    fun startUnloading()
+  @ActorMethod(name = "startUnloading") fun startUnloading()
 
-    @ActorMethod(name="markJobDone")
-    fun markJobDone()
+  @ActorMethod(name = "markJobDone") fun markJobDone()
 
-    @ActorMethod(name="markPickedUp")
-    fun markPickedUp()
+  @ActorMethod(name = "markPickedUp") fun markPickedUp()
 
-    @ActorMethod(name="armPickupTimeout")
-    fun armPickupTimeout() : Mono<Void>
+  @ActorMethod(name = "armPickupTimeout") fun armPickupTimeout(): Mono<Void>
 }
-

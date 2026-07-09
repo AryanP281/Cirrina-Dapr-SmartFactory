@@ -5,6 +5,7 @@ plugins {
   id("com.ncorti.ktfmt.gradle")
   kotlin("kapt")
   kotlin("jvm")
+  kotlin("plugin.spring") version "2.1.0"
 }
 
 group = "ac.at.uibk.dps.projectname"
@@ -35,7 +36,7 @@ dependencies {
   implementation("org.apache.fory:fory-core:0.15.0")
   implementation("org.apache.fory:fory-kotlin:0.15.0")
 
-  //Dapr
+  // Dapr
   implementation("io.dapr:dapr-sdk:1.18.0")
   implementation("io.dapr:dapr-sdk-actors:1.18.0")
   implementation("io.dapr:dapr-sdk-springboot:1.18.0")
