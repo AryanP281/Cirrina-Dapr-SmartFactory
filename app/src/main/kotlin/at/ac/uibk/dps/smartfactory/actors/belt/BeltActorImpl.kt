@@ -31,11 +31,7 @@ class BeltActorImpl (
             }
 
             BeltActor.States.TRANSPORTING -> {
-                if(currentActiveState == BeltActor.States.LOADING || currentActiveState == BeltActor.States.ERROR) {
-                    //Exit actions
-                    if(currentActiveState == BeltActor.States.LOADING)
-                        daprClient.publishEvent("pubsub", "eScanned", mapOf<String,Any>()).subscribe()
-
+                if(currentActiveState == BeltActor.States.LOADING) {
                     currentActiveState = BeltActor.States.TRANSPORTING
                     transportingState()
                 }
@@ -51,20 +47,8 @@ class BeltActorImpl (
                 }
             }
 
-            BeltActor.States.ERROR -> {
-                if(currentActiveState == BeltActor.States.LOADING) {
-                    //Exit actions
-                    daprClient.publishEvent("pubsub", "eScanned", mapOf<String,Any>()).subscribe()
-
-                    currentActiveState = BeltActor.States.ERROR
-                    errorState()
-                }
-            }
-
             BeltActor.States.JOB_DONE -> {
                 //Exit actions
-                if(currentActiveState == BeltActor.States.LOADING)
-                    daprClient.publishEvent("pubsub", "eScanned", mapOf<String,Any>()).subscribe()
                 if(currentActiveState == BeltActor.States.UNLOADING)
                     unregisterTimer("armPickupTimeout-${id}").block()
 
@@ -90,29 +74,17 @@ class BeltActorImpl (
         daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Belt error: Invalid object detected")).subscribe()
     }
 
-    override fun markObjectValidity(isValid: Boolean)
+    override fun markObjectValidity()
     {
-        if(isValid && (currentActiveState == BeltActor.States.LOADING || currentActiveState == BeltActor.States.ERROR))
-            transition(BeltActor.States.TRANSPORTING)
-        if(!isValid && currentActiveState == BeltActor.States.LOADING)
-            transition(BeltActor.States.ERROR)
+        transition(BeltActor.States.TRANSPORTING)
     }
 
     override fun startUnloading() {
-        if(currentActiveState == BeltActor.States.TRANSPORTING) {
-            isUnloading = true
-            daprClient.publishEvent("pubsub", "isUnloading", isUnloading).subscribe()
-            transition(BeltActor.States.UNLOADING)
-        }
+        transition(BeltActor.States.UNLOADING)
     }
 
     override fun markJobDone()
     {
-        if(currentActiveState == BeltActor.States.UNLOADING){
-            isUnloading = false
-            daprClient.publishEvent("pubsub", "isUnloading", isUnloading).subscribe()
-        }
-
         transition(BeltActor.States.JOB_DONE)
     }
 

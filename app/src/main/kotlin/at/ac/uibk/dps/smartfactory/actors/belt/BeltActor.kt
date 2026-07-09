@@ -11,12 +11,11 @@ interface BeltActor {
         LOADING,
         TRANSPORTING,
         UNLOADING,
-        ERROR,
         JOB_DONE
     }
 
     @ActorMethod(name = "markObjectValidity")
-    fun markObjectValidity(isValid: Boolean)
+    fun markObjectValidity()
 
     @ActorMethod(name="startUnloading")
     fun startUnloading()
