@@ -41,6 +41,9 @@ dependencies {
   implementation("io.dapr:dapr-sdk-actors:1.18.0")
   implementation("io.dapr:dapr-sdk-springboot:1.18.0")
 
+  // Spring Web
+  implementation("org.springframework.boot:spring-boot-starter-web")
+
   // Logging
   implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
   implementation("ch.qos.logback:logback-classic:1.5.34")
