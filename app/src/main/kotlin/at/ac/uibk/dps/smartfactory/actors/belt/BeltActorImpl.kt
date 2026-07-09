@@ -40,7 +40,7 @@ class BeltActorImpl (
             BeltActor.States.UNLOADING -> {
                 if(currentActiveState == BeltActor.States.TRANSPORTING) {
                     //Exit actions
-                    Services.stopBelt().block()
+                    Services.stopBelt().subscribe()
 
                     currentActiveState = BeltActor.States.UNLOADING
                     unloadingState()
@@ -60,7 +60,7 @@ class BeltActorImpl (
 
     private fun transportingState() {
         //Invoke MoveBelt Action
-        Services.moveBelt().block()
+        Services.moveBelt().subscribe()
     }
 
     private fun unloadingState() {

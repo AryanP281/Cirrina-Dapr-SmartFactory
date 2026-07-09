@@ -23,7 +23,7 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
       nScans += 1
 
       //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).block()
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
     }
   }
 
@@ -32,7 +32,7 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
       nAssemblies += 1
 
       //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).block()
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
     }
   }
 
@@ -41,7 +41,7 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
       productsCompleted += 1
 
       //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).block()
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
     }
   }
 
@@ -51,7 +51,7 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
       jobDone = true
 
       //Invoke SendStatistics service
-      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).block()
+      Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone)).subscribe()
     }
   }
 }

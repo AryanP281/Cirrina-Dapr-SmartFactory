@@ -46,7 +46,7 @@ class MessageProcessorImpl(
   }
 
   private fun processState(msg: String) {
-    Services.processEmail(MessageProcessingRequest(msg)).block()
+    Services.processEmail(MessageProcessingRequest(msg)).subscribe()
 
     transition(MessageProcessorActor.States.IDLE)
   }

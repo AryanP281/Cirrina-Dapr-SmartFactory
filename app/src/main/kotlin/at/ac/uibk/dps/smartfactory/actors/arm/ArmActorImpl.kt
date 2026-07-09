@@ -143,13 +143,13 @@ class ArmActorImpl(
     private fun pickupState()
     {
         //Invoke arm pickup
-        Services.pickUp().block()
+        Services.pickUp().subscribe()
     }
 
     private fun assembleState()
     {
         //Invoke Assemble
-        Services.assemble().block()
+        Services.assemble().subscribe()
     }
 
     private fun errorState()
@@ -164,7 +164,7 @@ class ArmActorImpl(
     private fun returnState()
     {
         //Invoke return to start action
-        Services.returnToStart().block()
+        Services.returnToStart().subscribe()
     }
 
     override fun retryTimeout() : Mono<Void>
