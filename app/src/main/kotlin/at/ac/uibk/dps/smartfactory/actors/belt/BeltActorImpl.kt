@@ -15,7 +15,6 @@ class BeltActorImpl (
 {
 
     private var currentActiveState : BeltActor.States = BeltActor.States.LOADING
-    private var isUnloading = false
 
     private val daprClient = DaprClientBuilder().build()
 
