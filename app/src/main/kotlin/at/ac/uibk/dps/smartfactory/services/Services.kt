@@ -21,6 +21,8 @@ object Services {
       register(PhotoScanResponse::class.java)
       register(PickupResponse::class.java)
       register(AssembleResponse::class.java)
+      register(PhotoCaptureResponse::class.java)
+      register(PhotoScanRequest::class.java)
     }
 
   private val threadBuffer = ThreadLocal.withInitial { MemoryBuffer.newHeapBuffer(1024) }
@@ -101,17 +103,33 @@ object Services {
 
   }
 
-  fun scanPhoto() : Mono<PhotoScanResponse>
+  fun scanPhoto(req : PhotoScanRequest) : Mono<Void>
   {
+    val buffer = threadBuffer.get().apply { writerIndex(0) }
+    fory.serialize(buffer, req)
+
     val request = HttpRequest.newBuilder()
       .uri(URI.create("$baseUrl/scanphoto"))
-      .GET()
+      .header("Content-Type", "application/x-fury")
+      .POST(HttpRequest.BodyPublishers.ofByteArray(buffer.getBytes(0, buffer.writerIndex())))
       .build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply { response ->
-        fory.deserialize(response.body()) as PhotoScanResponse
+        null
       }
+    )
+  }
+
+  fun discardObject() : Mono<Void>
+  {
+    val request = HttpRequest.newBuilder()
+      .uri(URI.create("$baseUrl/discardobject"))
+      .GET()
+      .build()
+
+    return Mono.fromFuture(
+      client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply { null }
     )
   }
 

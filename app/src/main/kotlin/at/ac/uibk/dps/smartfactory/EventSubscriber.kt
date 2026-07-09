@@ -1,6 +1,7 @@
 package at.ac.uibk.dps.smartfactory
 
 import at.ac.uibk.dps.smartfactory.actors.arm.ArmActor
+import at.ac.uibk.dps.smartfactory.actors.assemblycontroller.AssemblyControllerActor
 import at.ac.uibk.dps.smartfactory.actors.belt.BeltActor
 import at.ac.uibk.dps.smartfactory.actors.jobcontroller.JobControllerActor
 import at.ac.uibk.dps.smartfactory.actors.messageprocessor.MessageProcessorActor
@@ -25,9 +26,60 @@ class EventSubscriber {
     val actorProxy = when(role) {
         "jobcontroller" -> ActorProxyBuilder(JobControllerActor::class.java, ActorClient()).build(ActorId(actorId))
         "messageprocessor" -> ActorProxyBuilder(MessageProcessorActor::class.java, ActorClient()).build(ActorId(actorId))
+        "assemblycontroller" -> ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
         "monitor" -> ActorProxyBuilder(MonitorActor::class.java, ActorClient()).build(ActorId(actorId))
         "belt" -> ActorProxyBuilder(BeltActor::class.java, ActorClient()).build(ActorId(actorId))
         else -> ActorProxyBuilder(ArmActor::class.java, ActorClient()).build(ActorId(actorId))
+    }
+
+    @Topic(name = "eBeamInterruptedStart", pubsubName = "pubsub")
+    @PostMapping("/eBeamInterruptedStart")
+    fun eBeamInterruptedStart() : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtStart()
+        }
+
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
+    @PostMapping("/ePhotoCaptured")
+    fun ePhotoCaptured(@RequestBody event : CloudEvent<Map<String, ByteArray>>) : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).processCapturedPhoto(event.data["data"] ?: byteArrayOf())
+        }
+
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
+    @PostMapping("/ePhotoScanned")
+    fun ePhotoScanned(@RequestBody event : CloudEvent<Map<String, Boolean>>) : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).processPhotoScan(event.data["validObject"] ?: false)
+        }
+
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "eObjectDiscarded", pubsubName = "pubsub")
+    @PostMapping("/eObjectDiscarded")
+    fun eObjectDiscarded() : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).objectDiscarded()
+        }
+
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "eBeamInterruptedEnd", pubsubName = "pubsub")
+    @PostMapping("/eBeamInterruptedEnd")
+    fun eBeamInterruptedEnd() : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtEnd()
+        }
+
+        return ResponseEntity.ok().build()
     }
 
     @Topic(name = "eProductComplete", pubsubName = "pubsub")
@@ -91,6 +143,7 @@ class EventSubscriber {
     fun markPickedUp() : ResponseEntity<Unit> {
         when(actorProxy) {
             is BeltActor -> (actorProxy as BeltActor).markPickedUp()
+            is AssemblyControllerActor -> actorProxy.processPickup()
         }
         return ResponseEntity.ok().build()
     }

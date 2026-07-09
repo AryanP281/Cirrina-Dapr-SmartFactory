@@ -13,3 +13,5 @@ data class PhotoScanResponse(val validObject : Boolean)
 data class PickupResponse(val success: Boolean)
 
 data class AssembleResponse(val success: Boolean)
+
+data class PhotoScanRequest(val photoData : ByteArray)
