@@ -8,7 +8,7 @@ plugins {
   kotlin("plugin.spring") version "2.1.0"
 }
 
-group = "ac.at.uibk.dps.projectname"
+group = "ac.at.uibk.dps.smartfactory"
 
 version =
   providers
@@ -18,8 +18,8 @@ version =
     .trim()
 
 application {
-  mainClass.set("at.ac.uibk.dps.projectname.ProjectNameKt")
-  applicationName = "projectname"
+  mainClass.set("at.ac.uibk.dps.smartfactory.SmartFactoryKt")
+  applicationName = "smartfactory"
 }
 
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
@@ -74,13 +74,13 @@ tasks.named("compileKotlin") { dependsOn(tasks.named("ktfmtFormat")) }
 
 tasks.named<Test>("test") { useJUnitPlatform() }
 
-tasks.named<Zip>("distZip") { archiveFileName.set("projectname.zip") }
+tasks.named<Zip>("distZip") { archiveFileName.set("smartfactory.zip") }
 
 tasks.withType<Jar>().configureEach {
   manifest {
     attributes(
       mapOf(
-        "Main-Class" to "at.ac.uibk.dps.projectname.ProjectNameKt",
+        "Main-Class" to "at.ac.uibk.dps.smartfactory.SmartFactoryKt",
         "Implementation-Version" to project.version.toString(),
         "Enable-Native-Access" to "ALL-UNNAMED",
       )
