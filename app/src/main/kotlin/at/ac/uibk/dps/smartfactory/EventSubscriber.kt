@@ -36,7 +36,7 @@ class EventSubscriber {
     @PostMapping("/eBeamInterruptedStart")
     fun eBeamInterruptedStart() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtStart()
+            is AssemblyControllerActor -> actorProxy.detectedAtStart()
         }
 
         return ResponseEntity.ok().build()
@@ -46,7 +46,7 @@ class EventSubscriber {
     @PostMapping("/ePhotoCaptured")
     fun ePhotoCaptured(@RequestBody event : CloudEvent<Map<String, ByteArray>>) : ResponseEntity<Unit> {
         when(actorProxy) {
-            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).processCapturedPhoto(event.data["data"] ?: byteArrayOf())
+            is AssemblyControllerActor -> actorProxy.processCapturedPhoto(event.data["data"] ?: byteArrayOf())
         }
 
         return ResponseEntity.ok().build()
@@ -56,7 +56,7 @@ class EventSubscriber {
     @PostMapping("/ePhotoScanned")
     fun ePhotoScanned(@RequestBody event : CloudEvent<Map<String, Boolean>>) : ResponseEntity<Unit> {
         when(actorProxy) {
-            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).processPhotoScan(event.data["validObject"] ?: false)
+            is AssemblyControllerActor -> actorProxy.processPhotoScan(event.data["validObject"] ?: false)
         }
 
         return ResponseEntity.ok().build()
@@ -66,7 +66,7 @@ class EventSubscriber {
     @PostMapping("/eObjectDiscarded")
     fun eObjectDiscarded() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).objectDiscarded()
+            is AssemblyControllerActor -> actorProxy.objectDiscarded()
         }
 
         return ResponseEntity.ok().build()
@@ -76,7 +76,7 @@ class EventSubscriber {
     @PostMapping("/eBeamInterruptedEnd")
     fun eBeamInterruptedEnd() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtEnd()
+            is AssemblyControllerActor -> actorProxy.detectedAtEnd()
         }
 
         return ResponseEntity.ok().build()
@@ -86,8 +86,8 @@ class EventSubscriber {
     @PostMapping("/eProductComplete")
     fun newProductComplete() : ResponseEntity<Unit> {
         when(actorProxy){
-            is JobControllerActor -> (actorProxy as JobControllerActor).markProductCompleted()
-            is MonitorActor -> (actorProxy as MonitorActor).incrementProductsCompletedCount()
+            is JobControllerActor -> actorProxy.markProductCompleted()
+            is MonitorActor -> actorProxy.incrementProductsCompletedCount()
         }
 
         return ResponseEntity.ok().build()
@@ -97,8 +97,10 @@ class EventSubscriber {
     @PostMapping("/eProcessMessage")
     fun processMessage(@RequestBody event: CloudEvent<Map<String, String>>) : ResponseEntity<Unit>
     {
-        if(actorProxy is MessageProcessorActor)
-            (actorProxy as MessageProcessorActor).processMessage(event.data["msg"] ?: "")
+        when(actorProxy) {
+            is MessageProcessorActor -> actorProxy.processMessage(event.data["msg"] ?: "")
+        }
+
         return ResponseEntity.ok().build()
     }
 
@@ -106,7 +108,7 @@ class EventSubscriber {
     @PostMapping("/eScanned")
     fun incrementScannedCount() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is MonitorActor -> (actorProxy as MonitorActor).markScanned()
+            is MonitorActor -> actorProxy.markScanned()
         }
         return ResponseEntity.ok().build()
     }
@@ -115,7 +117,7 @@ class EventSubscriber {
     @PostMapping("/eAssemblyComplete")
     fun incrementAssembledCount() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is MonitorActor -> (actorProxy as MonitorActor).markAssembled()
+            is MonitorActor -> actorProxy.markAssembled()
         }
         return ResponseEntity.ok().build()
     }
@@ -124,7 +126,7 @@ class EventSubscriber {
     @PostMapping("/eObjectValid")
     fun setObjectValidity() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is BeltActor -> (actorProxy as BeltActor).markObjectValidity()
+            is BeltActor -> actorProxy.markObjectValidity()
         }
         return ResponseEntity.ok().build()
     }
@@ -133,7 +135,7 @@ class EventSubscriber {
     @PostMapping("/eStartUnload")
     fun startUnloading() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is BeltActor -> (actorProxy as BeltActor).startUnloading()
+            is BeltActor -> actorProxy.startUnloading()
         }
         return ResponseEntity.ok().build()
     }
@@ -142,7 +144,7 @@ class EventSubscriber {
     @PostMapping("/ePickedUp")
     fun markPickedUp() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is BeltActor -> (actorProxy as BeltActor).markPickedUp()
+            is BeltActor -> actorProxy.markPickedUp()
             is AssemblyControllerActor -> actorProxy.processPickup()
         }
         return ResponseEntity.ok().build()
@@ -161,7 +163,7 @@ class EventSubscriber {
     @PostMapping("/eMarkPickedUp")
     fun eMarkPickedUp() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is ArmActor -> (actorProxy as ArmActor).markPickedUp()
+            is ArmActor -> actorProxy.markPickedUp()
         }
         return ResponseEntity.ok().build()
     }
@@ -197,10 +199,11 @@ class EventSubscriber {
     @PostMapping("/eJobDone")
     fun markJobDone() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is MessageProcessorActor -> (actorProxy as MessageProcessorActor).markJobDone()
-            is MonitorActor -> (actorProxy as MonitorActor).markJobDone()
-            is BeltActor -> (actorProxy as BeltActor).markJobDone()
-            is ArmActor -> (actorProxy as ArmActor).markJobDone()
+            is MessageProcessorActor -> actorProxy.markJobDone()
+            is MonitorActor -> actorProxy.markJobDone()
+            is BeltActor -> actorProxy.markJobDone()
+            is ArmActor -> actorProxy.markJobDone()
+            is AssemblyControllerActor -> actorProxy.markJobDone()
         }
         return ResponseEntity.ok().build()
     }

@@ -123,4 +123,8 @@ class AssemblyControllerActorImpl(
             transition(AssemblyControllerActor.States.DETECTING_START)
     }
 
+    override fun markJobDone() {
+        transition(AssemblyControllerActor.States.JOB_DONE)
+    }
+
 }

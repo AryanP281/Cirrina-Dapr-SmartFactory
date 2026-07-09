@@ -27,4 +27,6 @@ interface AssemblyControllerActor
     @ActorMethod(name = "detectedAtEnd") fun detectedAtEnd()
 
     @ActorMethod(name = "processPickup") fun processPickup()
+
+    @ActorMethod(name= "markJobDone") fun markJobDone()
 }
