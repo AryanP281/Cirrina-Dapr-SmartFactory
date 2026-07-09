@@ -84,7 +84,7 @@ class EventSubscriber {
 
     @Topic(name = "eProductComplete", pubsubName = "pubsub")
     @PostMapping("/eProductComplete")
-    fun newProductComplete() : ResponseEntity<Unit> {
+    fun eProductComplete() : ResponseEntity<Unit> {
         when(actorProxy){
             is JobControllerActor -> actorProxy.markProductCompleted()
             is MonitorActor -> actorProxy.incrementProductsCompletedCount()
@@ -95,7 +95,7 @@ class EventSubscriber {
 
     @Topic(name = "eProcessMessage", pubsubName = "pubsub")
     @PostMapping("/eProcessMessage")
-    fun processMessage(@RequestBody event: CloudEvent<Map<String, String>>) : ResponseEntity<Unit>
+    fun eProcessMessage(@RequestBody event: CloudEvent<Map<String, String>>) : ResponseEntity<Unit>
     {
         when(actorProxy) {
             is MessageProcessorActor -> actorProxy.processMessage(event.data["msg"] ?: "")
@@ -106,7 +106,7 @@ class EventSubscriber {
 
     @Topic(name = "eScanned", pubsubName = "pubsub")
     @PostMapping("/eScanned")
-    fun incrementScannedCount() : ResponseEntity<Unit> {
+    fun eScanned() : ResponseEntity<Unit> {
         when(actorProxy) {
             is MonitorActor -> actorProxy.markScanned()
         }
@@ -115,7 +115,7 @@ class EventSubscriber {
 
     @Topic(name = "eAssemblyComplete", pubsubName = "pubsub")
     @PostMapping("/eAssemblyComplete")
-    fun incrementAssembledCount() : ResponseEntity<Unit> {
+    fun eAssemblyComplete() : ResponseEntity<Unit> {
         when(actorProxy) {
             is MonitorActor -> actorProxy.markAssembled()
         }
@@ -124,7 +124,7 @@ class EventSubscriber {
 
     @Topic(name = "eObjectValid", pubsubName = "pubsub")
     @PostMapping("/eObjectValid")
-    fun setObjectValidity() : ResponseEntity<Unit> {
+    fun eObjectValid() : ResponseEntity<Unit> {
         when(actorProxy) {
             is BeltActor -> actorProxy.markObjectValidity()
         }
@@ -133,7 +133,7 @@ class EventSubscriber {
 
     @Topic(name = "eStartUnload", pubsubName = "pubsub")
     @PostMapping("/eStartUnload")
-    fun startUnloading() : ResponseEntity<Unit> {
+    fun eStartUnload() : ResponseEntity<Unit> {
         when(actorProxy) {
             is BeltActor -> actorProxy.startUnloading()
         }
@@ -142,7 +142,7 @@ class EventSubscriber {
 
     @Topic(name = "ePickedUp", pubsubName = "pubsub")
     @PostMapping("/ePickedUp")
-    fun markPickedUp() : ResponseEntity<Unit> {
+    fun ePickedUp() : ResponseEntity<Unit> {
         when(actorProxy) {
             is BeltActor -> actorProxy.markPickedUp()
             is AssemblyControllerActor -> actorProxy.processPickup()
@@ -152,7 +152,7 @@ class EventSubscriber {
 
     @Topic(name = "eArmPickup", pubsubName = "pubsub")
     @PostMapping("/eArmPickup")
-    fun pickup() : ResponseEntity<Unit> {
+    fun eArmPickup() : ResponseEntity<Unit> {
         when(actorProxy) {
             is ArmActor -> actorProxy.initiatePickup()
         }
@@ -197,7 +197,7 @@ class EventSubscriber {
 
     @Topic(name = "eJobDone", pubsubName = "pubsub")
     @PostMapping("/eJobDone")
-    fun markJobDone() : ResponseEntity<Unit> {
+    fun eJobDone() : ResponseEntity<Unit> {
         when(actorProxy) {
             is MessageProcessorActor -> actorProxy.markJobDone()
             is MonitorActor -> actorProxy.markJobDone()
