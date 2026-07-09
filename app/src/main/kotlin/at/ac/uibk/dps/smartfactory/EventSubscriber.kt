@@ -42,7 +42,7 @@ class EventSubscriber {
   @PostMapping("/eBeamInterruptedStart")
   fun eBeamInterruptedStart(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is AssemblyControllerActor -> actorProxy.detectedAtStart()
+      is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtStart()
     }
 
     return ResponseEntity.ok().build()
@@ -53,7 +53,9 @@ class EventSubscriber {
   fun ePhotoCaptured(@RequestBody event: CloudEvent<Map<String, ByteArray>>): ResponseEntity<Unit> {
     when (actorProxy) {
       is AssemblyControllerActor ->
-        actorProxy.processCapturedPhoto(event.data["data"] ?: byteArrayOf())
+        (actorProxy as AssemblyControllerActor).processCapturedPhoto(
+          event.data["data"] ?: byteArrayOf()
+        )
     }
 
     return ResponseEntity.ok().build()
@@ -63,7 +65,8 @@ class EventSubscriber {
   @PostMapping("/ePhotoScanned")
   fun ePhotoScanned(@RequestBody event: CloudEvent<Map<String, Boolean>>): ResponseEntity<Unit> {
     when (actorProxy) {
-      is AssemblyControllerActor -> actorProxy.processPhotoScan(event.data["validObject"] ?: false)
+      is AssemblyControllerActor ->
+        (actorProxy as AssemblyControllerActor).processPhotoScan(event.data["validObject"] ?: false)
     }
 
     return ResponseEntity.ok().build()
@@ -73,7 +76,7 @@ class EventSubscriber {
   @PostMapping("/eObjectDiscarded")
   fun eObjectDiscarded(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is AssemblyControllerActor -> actorProxy.objectDiscarded()
+      is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).objectDiscarded()
     }
 
     return ResponseEntity.ok().build()
@@ -83,7 +86,7 @@ class EventSubscriber {
   @PostMapping("/eBeamInterruptedEnd")
   fun eBeamInterruptedEnd(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is AssemblyControllerActor -> actorProxy.detectedAtEnd()
+      is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).detectedAtEnd()
     }
 
     return ResponseEntity.ok().build()
@@ -93,8 +96,8 @@ class EventSubscriber {
   @PostMapping("/eProductComplete")
   fun eProductComplete(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is JobControllerActor -> actorProxy.markProductCompleted()
-      is MonitorActor -> actorProxy.incrementProductsCompletedCount()
+      is JobControllerActor -> (actorProxy as JobControllerActor).markProductCompleted()
+      is MonitorActor -> (actorProxy as MonitorActor).incrementProductsCompletedCount()
     }
 
     return ResponseEntity.ok().build()
@@ -104,7 +107,8 @@ class EventSubscriber {
   @PostMapping("/eProcessMessage")
   fun eProcessMessage(@RequestBody event: CloudEvent<Map<String, String>>): ResponseEntity<Unit> {
     when (actorProxy) {
-      is MessageProcessorActor -> actorProxy.processMessage(event.data["msg"] ?: "")
+      is MessageProcessorActor ->
+        (actorProxy as MessageProcessorActor).processMessage(event.data["msg"] ?: "")
     }
 
     return ResponseEntity.ok().build()
@@ -114,7 +118,7 @@ class EventSubscriber {
   @PostMapping("/eScanned")
   fun eScanned(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is MonitorActor -> actorProxy.markScanned()
+      is MonitorActor -> (actorProxy as MonitorActor).markScanned()
     }
     return ResponseEntity.ok().build()
   }
@@ -123,7 +127,7 @@ class EventSubscriber {
   @PostMapping("/eAssemblyComplete")
   fun eAssemblyComplete(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is MonitorActor -> actorProxy.markAssembled()
+      is MonitorActor -> (actorProxy as MonitorActor).markAssembled()
     }
     return ResponseEntity.ok().build()
   }
@@ -132,7 +136,7 @@ class EventSubscriber {
   @PostMapping("/eObjectValid")
   fun eObjectValid(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is BeltActor -> actorProxy.markObjectValidity()
+      is BeltActor -> (actorProxy as BeltActor).markObjectValidity()
     }
     return ResponseEntity.ok().build()
   }
@@ -141,7 +145,7 @@ class EventSubscriber {
   @PostMapping("/eStartUnload")
   fun eStartUnload(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is BeltActor -> actorProxy.startUnloading()
+      is BeltActor -> (actorProxy as BeltActor).startUnloading()
     }
     return ResponseEntity.ok().build()
   }
@@ -150,8 +154,8 @@ class EventSubscriber {
   @PostMapping("/ePickedUp")
   fun ePickedUp(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is BeltActor -> actorProxy.markPickedUp()
-      is AssemblyControllerActor -> actorProxy.processPickup()
+      is BeltActor -> (actorProxy as BeltActor).markPickedUp()
+      is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).processPickup()
     }
     return ResponseEntity.ok().build()
   }
@@ -160,7 +164,7 @@ class EventSubscriber {
   @PostMapping("/eArmPickup")
   fun eArmPickup(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is ArmActor -> actorProxy.initiatePickup()
+      is ArmActor -> (actorProxy as ArmActor).initiatePickup()
     }
     return ResponseEntity.ok().build()
   }
@@ -169,7 +173,7 @@ class EventSubscriber {
   @PostMapping("/eMarkPickedUp")
   fun eMarkPickedUp(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is ArmActor -> actorProxy.markPickedUp()
+      is ArmActor -> (actorProxy as ArmActor).markPickedUp()
     }
     return ResponseEntity.ok().build()
   }
@@ -178,7 +182,7 @@ class EventSubscriber {
   @PostMapping("/eUpdatePickupStatus")
   fun eUpdatePickupStatus(@RequestBody event: CloudEvent<Boolean>): ResponseEntity<Unit> {
     when (actorProxy) {
-      is ArmActor -> actorProxy.updatePickupStatus(event.data)
+      is ArmActor -> (actorProxy as ArmActor).updatePickupStatus(event.data)
     }
     return ResponseEntity.ok().build()
   }
@@ -187,7 +191,7 @@ class EventSubscriber {
   @PostMapping("/eCheckAssembleSuccess")
   fun eCheckAssembleSuccess(@RequestBody event: CloudEvent<Boolean>): ResponseEntity<Unit> {
     when (actorProxy) {
-      is ArmActor -> actorProxy.updateAssemblyStatus(event.data)
+      is ArmActor -> (actorProxy as ArmActor).updateAssemblyStatus(event.data)
     }
     return ResponseEntity.ok().build()
   }
@@ -196,7 +200,7 @@ class EventSubscriber {
   @PostMapping("/eResetArm")
   fun eResetArm(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is ArmActor -> actorProxy.armReset()
+      is ArmActor -> (actorProxy as ArmActor).armReset()
     }
     return ResponseEntity.ok().build()
   }
@@ -205,11 +209,11 @@ class EventSubscriber {
   @PostMapping("/eJobDone")
   fun eJobDone(): ResponseEntity<Unit> {
     when (actorProxy) {
-      is MessageProcessorActor -> actorProxy.markJobDone()
-      is MonitorActor -> actorProxy.markJobDone()
-      is BeltActor -> actorProxy.markJobDone()
-      is ArmActor -> actorProxy.markJobDone()
-      is AssemblyControllerActor -> actorProxy.markJobDone()
+      is MessageProcessorActor -> (actorProxy as MessageProcessorActor).markJobDone()
+      is MonitorActor -> (actorProxy as MonitorActor).markJobDone()
+      is BeltActor -> (actorProxy as BeltActor).markJobDone()
+      is ArmActor -> (actorProxy as ArmActor).markJobDone()
+      is AssemblyControllerActor -> (actorProxy as AssemblyControllerActor).markJobDone()
     }
     return ResponseEntity.ok().build()
   }
