@@ -21,12 +21,18 @@ class ArmActorImpl(
     private var partsAssembled = 0
 
     private val daprClient = DaprClientBuilder().build()
-    private val logger = LoggerFactory.getLogger(ArmActorImpl::class.java)
 
     private fun transition(targetState: ArmActor.States, data: Any? = null) {
         when(targetState) {
             ArmActor.States.IDLE -> {
                 if(currActiveState == ArmActor.States.RETURN) {
+                    //Transition Actions
+                    if(partsAssembled >= partsPerProduct)
+                    {
+                        partsAssembled = 0
+                        daprClient.publishEvent("pubsub", "eProductComplete", mapOf<String,Any>()).subscribe()
+                    }
+
                     currActiveState = targetState
                     idleState()
                 }
@@ -43,6 +49,13 @@ class ArmActorImpl(
             ArmActor.States.ASSEMBLE -> {
                 if(currActiveState == ArmActor.States.PICKUP || currActiveState == ArmActor.States.ERROR)
                 {
+                    //Transition actions
+                    if(currActiveState == ArmActor.States.PICKUP)
+                    {
+                        //Raise ePickedUp
+                        daprClient.publishEvent("pubsub", "ePickedUp", mapOf<String,Any>()).subscribe()
+                    }
+
                     currActiveState = targetState
                     assembleState()
                 }
@@ -51,6 +64,10 @@ class ArmActorImpl(
             ArmActor.States.ERROR -> {
                 if(currActiveState == ArmActor.States.PICKUP || currActiveState == ArmActor.States.ASSEMBLE)
                 {
+                    //Transition actions
+                    if(currActiveState == ArmActor.States.PICKUP) errorMsg = "Pickup failed..."
+                    if(currActiveState == ArmActor.States.ASSEMBLE) errorMsg = "Assemble failed..."
+
                     currActiveState = targetState
                     errorState()
                 }
@@ -59,6 +76,13 @@ class ArmActorImpl(
             ArmActor.States.RETURN -> {
                 if(currActiveState == ArmActor.States.ASSEMBLE || currActiveState == ArmActor.States.ERROR)
                 {
+                    //Transition Actions
+                    if(currActiveState == ArmActor.States.ASSEMBLE)
+                    {
+                        partsAssembled++
+                        daprClient.publishEvent("pubsub", "eAssemblyComplete", mapOf<String,Any>()).subscribe()
+                    }
+
                     currActiveState = targetState
                     returnState()
                 }
@@ -77,17 +101,37 @@ class ArmActorImpl(
 
     override fun initiatePickup()
     {
-        if(currActiveState == ArmActor.States.IDLE)
-            transition(ArmActor.States.PICKUP)
+        transition(ArmActor.States.PICKUP)
     }
 
     override fun updatePickupStatus(pickupStatus: Boolean) {
-            this.pickupSuccess = pickupStatus
+        this.pickupSuccess = pickupStatus
+
+        if(pickupStatus)
+            transition(ArmActor.States.ASSEMBLE)
+        else
+            transition(ArmActor.States.ERROR)
+    }
+
+    override fun updateAssemblyStatus(assemblyStatus: Boolean)
+    {
+        if(assemblyStatus)
+            transition(ArmActor.States.RETURN)
+        else
+            transition(ArmActor.States.ERROR)
     }
 
     override fun markJobDone() {
         if(currActiveState == ArmActor.States.IDLE)
             transition(ArmActor.States.JOB_DONE)
+    }
+
+    override fun markPickedUp() {
+        this.pickupSuccess = true
+    }
+
+    override fun armReset() {
+        transition(ArmActor.States.IDLE)
     }
 
     private fun idleState()
@@ -99,38 +143,13 @@ class ArmActorImpl(
     private fun pickupState()
     {
         //Invoke arm pickup
-        pickupSuccess = Services.pickUp().block()?.success ?: false
-
-        if(pickupSuccess)
-        {
-            //Raise ePickedUp
-            daprClient.publishEvent("pubsub", "ePickedUp", mapOf<String,Any>()).subscribe()
-
-            transition(ArmActor.States.ASSEMBLE)
-        }
-        else
-        {
-            errorMsg = "Pickup failed..."
-            transition(ArmActor.States.ERROR)
-        }
+        Services.pickUp().block()
     }
 
     private fun assembleState()
     {
         //Invoke Assemble
-        val assemblyStatus = Services.assemble().block()?.success ?: false
-
-        if(assemblyStatus)
-        {
-            partsAssembled++
-            daprClient.publishEvent("pubsub", "eAssemblyComplete", mapOf<String,Any>()).subscribe()
-            transition(ArmActor.States.RETURN)
-        }
-        else
-        {
-            errorMsg = "Assemble failed..."
-            transition(ArmActor.States.ERROR)
-        }
+        Services.assemble().block()
     }
 
     private fun errorState()
@@ -146,15 +165,6 @@ class ArmActorImpl(
     {
         //Invoke return to start action
         Services.returnToStart().block()
-
-        if(partsAssembled >= partsPerProduct)
-        {
-            logger.info("+1 product completed")
-            partsAssembled = 0
-            daprClient.publishEvent("pubsub", "eProductComplete", mapOf<String,Any>()).subscribe()
-        }
-
-        transition(ArmActor.States.IDLE)
     }
 
     override fun retryTimeout() : Mono<Void>

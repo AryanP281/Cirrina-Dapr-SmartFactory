@@ -122,9 +122,9 @@ class EventSubscriber {
 
     @Topic(name = "eObjectValid", pubsubName = "pubsub")
     @PostMapping("/eObjectValid")
-    fun setObjectValidity(@RequestBody event: CloudEvent<Boolean>) : ResponseEntity<Unit> {
+    fun setObjectValidity() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is BeltActor -> (actorProxy as BeltActor).markObjectValidity(event.data)
+            is BeltActor -> (actorProxy as BeltActor).markObjectValidity()
         }
         return ResponseEntity.ok().build()
     }
@@ -152,16 +152,43 @@ class EventSubscriber {
     @PostMapping("/eArmPickup")
     fun pickup() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is ArmActor -> (actorProxy as ArmActor).initiatePickup()
+            is ArmActor -> actorProxy.initiatePickup()
         }
         return ResponseEntity.ok().build()
     }
 
-    @Topic(name = "eUpdatePickupSuccessStatus", pubsubName = "pubsub")
-    @PostMapping("/eUpdatePickupSuccessStatus")
-    fun updatePickupStatus(@RequestBody event: CloudEvent<Boolean>) : ResponseEntity<Unit> {
+    @Topic(name = "eMarkPickedUp", pubsubName = "pubsub")
+    @PostMapping("/eMarkPickedUp")
+    fun eMarkPickedUp() : ResponseEntity<Unit> {
         when(actorProxy) {
-            is ArmActor -> (actorProxy as ArmActor).updatePickupStatus(event.data)
+            is ArmActor -> (actorProxy as ArmActor).markPickedUp()
+        }
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "eUpdatePickupStatus", pubsubName = "pubsub")
+    @PostMapping("/eUpdatePickupStatus")
+    fun eUpdatePickupStatus(@RequestBody event: CloudEvent<Boolean>) : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is ArmActor -> actorProxy.updatePickupStatus(event.data)
+        }
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "eCheckAssembleSuccess", pubsubName = "pubsub")
+    @PostMapping("/eCheckAssembleSuccess")
+    fun eCheckAssembleSuccess(@RequestBody event: CloudEvent<Boolean>) : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is ArmActor -> (actorProxy as ArmActor).updateAssemblyStatus(event.data)
+        }
+        return ResponseEntity.ok().build()
+    }
+
+    @Topic(name = "eResetArm", pubsubName = "pubsub")
+    @PostMapping("/eResetArm")
+    fun eResetArm() : ResponseEntity<Unit> {
+        when(actorProxy) {
+            is ArmActor -> actorProxy.armReset()
         }
         return ResponseEntity.ok().build()
     }

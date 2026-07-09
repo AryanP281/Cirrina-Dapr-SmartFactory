@@ -15,13 +15,9 @@ object Services {
   private val fory: ThreadSafeFory =
     Fory.builder().withLanguage(Language.XLANG).withRefTracking(true).buildThreadSafeFory().apply {
       register(EmptyRequest::class.java)
-      register(BeamDetectionResponse::class.java)
       register(StatisticsRequest::class.java)
       register(MessageProcessingRequest::class.java)
       register(PhotoScanResponse::class.java)
-      register(PickupResponse::class.java)
-      register(AssembleResponse::class.java)
-      register(PhotoCaptureResponse::class.java)
       register(PhotoScanRequest::class.java)
     }
 
@@ -43,32 +39,6 @@ object Services {
     client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
 
     return Mono.empty()
-  }
-
-  fun beamDetectionStart(): Mono<BeamDetectionResponse> {
-    val request = HttpRequest.newBuilder()
-      .uri(URI.create("$baseUrl/detectbeam/start"))
-      .GET()
-      .build()
-
-    return Mono.fromFuture(
-      client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-        .thenApply { response ->
-          fory.deserialize(response.body()) as BeamDetectionResponse
-        }
-    )
-  }
-
-  fun beamDetectionEnd(): Mono<BeamDetectionResponse> {
-    val request = HttpRequest.newBuilder()
-      .uri(URI.create("$baseUrl/detectbeam/end"))
-      .GET()
-      .build()
-
-    return Mono.fromFuture(
-      client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
-        .thenApply { response -> fory.deserialize(response.body()) as BeamDetectionResponse }
-    )
   }
 
   fun sendStatistics(req : StatisticsRequest) : Mono<Void> {
@@ -161,7 +131,7 @@ object Services {
     )
   }
 
-  fun pickUp() : Mono<PickupResponse>
+  fun pickUp() : Mono<Void>
   {
     val request = HttpRequest.newBuilder()
       .uri(URI.create("$baseUrl/pickup"))
@@ -170,12 +140,12 @@ object Services {
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply { response ->
-        fory.deserialize(response.body()) as PickupResponse
+        null
       }
     )
   }
 
-  fun assemble() : Mono<AssembleResponse>
+  fun assemble() : Mono<Void>
   {
     val request = HttpRequest.newBuilder()
       .uri(URI.create("$baseUrl/assemble"))
@@ -184,7 +154,7 @@ object Services {
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply { response ->
-        fory.deserialize(response.body()) as AssembleResponse
+        null
       }
     )
   }

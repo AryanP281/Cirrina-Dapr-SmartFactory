@@ -24,9 +24,18 @@ interface ArmActor {
     @ActorMethod(name = "updatePickupStatus")
     fun updatePickupStatus(pickupStatus : Boolean)
 
+    @ActorMethod(name = "updateAssemblyStatus")
+    fun updateAssemblyStatus(assemblyStatus : Boolean)
+
     @ActorMethod(name="markJobDone")
     fun markJobDone()
 
     @ActorMethod(name="retryTimeout")
     fun retryTimeout() : Mono<Void>
+
+    @ActorMethod(name = "markPickedUp")
+    fun markPickedUp()
+
+    @ActorMethod(name = "armReset")
+    fun armReset()
 }
