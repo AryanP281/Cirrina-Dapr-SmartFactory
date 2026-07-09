@@ -181,7 +181,7 @@ class EventSubscriber {
     @PostMapping("/eCheckAssembleSuccess")
     fun eCheckAssembleSuccess(@RequestBody event: CloudEvent<Boolean>) : ResponseEntity<Unit> {
         when(actorProxy) {
-            is ArmActor -> (actorProxy as ArmActor).updateAssemblyStatus(event.data)
+            is ArmActor -> actorProxy.updateAssemblyStatus(event.data)
         }
         return ResponseEntity.ok().build()
     }
