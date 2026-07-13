@@ -21,7 +21,6 @@ fun main(args: Array<String>) {
   val role = System.getenv("ROLE")
   val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
 
-  println(role)
   when (role) {
     "jobcontroller" -> ActorRuntime.getInstance().registerActor(JobControllerActorImpl::class.java)
     "monitor" -> ActorRuntime.getInstance().registerActor(MonitorActorImpl::class.java)

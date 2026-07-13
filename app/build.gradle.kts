@@ -46,7 +46,6 @@ dependencies {
 
   // Logging
   implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
-  implementation("ch.qos.logback:logback-classic:1.5.34")
 
   // Dagger
   implementation("com.google.dagger:dagger:2.59.2")
