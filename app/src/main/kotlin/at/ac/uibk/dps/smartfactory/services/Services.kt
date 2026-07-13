@@ -58,7 +58,7 @@ object Services {
   }
 
   fun takePhoto(): Mono<Void> {
-    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/takePhoto")).GET().build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/takephoto")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenApply { response -> null }

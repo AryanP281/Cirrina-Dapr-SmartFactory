@@ -66,6 +66,7 @@ class AssemblyControllerActorImpl(
 
   private fun capturePhotoState() {
     // Invoking photo capture service
+    println("Sending photo capture request")
     Services.takePhoto().subscribe()
   }
 
@@ -92,6 +93,7 @@ class AssemblyControllerActorImpl(
   }
 
   override fun processCapturedPhoto(photoData: ByteArray) {
+    println("Photo captured")
     transition(AssemblyControllerActor.States.SCAN_PHOTO, photoData)
   }
 
