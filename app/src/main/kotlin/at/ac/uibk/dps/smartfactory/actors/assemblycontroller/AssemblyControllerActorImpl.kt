@@ -66,12 +66,12 @@ class AssemblyControllerActorImpl(
 
   private fun capturePhotoState() {
     // Invoking photo capture service
-    Services.takePhoto()
+    Services.takePhoto().subscribe()
   }
 
   private fun scanPhotoState(photoData: ByteArray) {
     // Invoking photo scan service
-    Services.scanPhoto(PhotoScanRequest(photoData))
+    Services.scanPhoto(PhotoScanRequest(photoData)).subscribe()
   }
 
   private fun errorState() {
