@@ -12,10 +12,13 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.actors.runtime.ActorRuntime
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication class SmartFactory
+
+val logger = LoggerFactory.getLogger(SmartFactory::class.java)
 
 fun main(args: Array<String>) {
   val role = System.getenv("ROLE")
@@ -29,7 +32,7 @@ fun main(args: Array<String>) {
     "arm" -> ActorRuntime.getInstance().registerActor(ArmActorImpl::class.java)
     "assemblycontroller" ->
       ActorRuntime.getInstance().registerActor(AssemblyControllerActorImpl::class.java)
-    else -> println("ERROR: Unknown role $role")
+    else -> logger.error("Unknown role $role")
   }
 
   runApplication<SmartFactory>(*args)
