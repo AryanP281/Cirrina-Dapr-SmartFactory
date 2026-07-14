@@ -36,13 +36,4 @@ fun main(args: Array<String>) {
   }
 
   runApplication<SmartFactory>(*args)
-
-  when (role) {
-    "jobcontroller" ->
-      ActorProxyBuilder(JobControllerActor::class.java, ActorClient())
-        .build(ActorId(actorId))
-        .initialize()
-    "arm" ->
-      ActorProxyBuilder(ArmActor::class.java, ActorClient()).build(ActorId(actorId)).initialize()
-  }
 }
