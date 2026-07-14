@@ -1,25 +1,19 @@
 package at.ac.uibk.dps.smartfactory.services
 
+import at.ac.uibk.dps.smartfactory.api.ForyConfig
+import at.ac.uibk.dps.smartfactory.api.MessageProcessingRequest
+import at.ac.uibk.dps.smartfactory.api.PhotoScanRequest
+import at.ac.uibk.dps.smartfactory.api.StatisticsRequest
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import org.apache.fory.Fory
-import org.apache.fory.ThreadSafeFory
-import org.apache.fory.config.Language
 import org.apache.fory.memory.MemoryBuffer
 import reactor.core.publisher.Mono
 
 object Services {
 
-  private val fory: ThreadSafeFory =
-    Fory.builder().withLanguage(Language.XLANG).withRefTracking(true).buildThreadSafeFory().apply {
-      register(EmptyRequest::class.java)
-      register(StatisticsRequest::class.java)
-      register(MessageProcessingRequest::class.java)
-      register(PhotoScanResponse::class.java)
-      register(PhotoScanRequest::class.java)
-    }
+  private val fory = ForyConfig.fory
 
   private val threadBuffer = ThreadLocal.withInitial { MemoryBuffer.newHeapBuffer(1024) }
   private val client = HttpClient.newHttpClient()

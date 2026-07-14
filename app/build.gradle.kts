@@ -58,6 +58,9 @@ dependencies {
   testImplementation(platform("org.junit:junit-bom:5.11.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
+
+  // Fory Bindings
+  implementation(project(":api"))
 }
 
 repositories {

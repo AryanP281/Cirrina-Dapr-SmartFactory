@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.smartfactory.services
+package at.ac.uibk.dps.smartfactory.api
 
 data class EmptyRequest(val dummy: String = "") {}
 

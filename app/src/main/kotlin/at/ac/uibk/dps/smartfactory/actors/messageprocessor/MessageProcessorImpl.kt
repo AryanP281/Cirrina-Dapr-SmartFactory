@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.smartfactory.actors.messageprocessor
 
-import at.ac.uibk.dps.smartfactory.services.MessageProcessingRequest
+import at.ac.uibk.dps.smartfactory.api.MessageProcessingRequest
 import at.ac.uibk.dps.smartfactory.services.Services
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor

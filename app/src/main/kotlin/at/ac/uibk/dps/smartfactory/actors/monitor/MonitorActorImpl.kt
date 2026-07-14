@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.smartfactory.actors.monitor
 
+import at.ac.uibk.dps.smartfactory.api.StatisticsRequest
 import at.ac.uibk.dps.smartfactory.services.Services
-import at.ac.uibk.dps.smartfactory.services.StatisticsRequest
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext

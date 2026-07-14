@@ -1,6 +1,6 @@
 package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
 
-import at.ac.uibk.dps.smartfactory.services.PhotoScanRequest
+import at.ac.uibk.dps.smartfactory.api.PhotoScanRequest
 import at.ac.uibk.dps.smartfactory.services.Services
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
@@ -66,7 +66,6 @@ class AssemblyControllerActorImpl(
 
   private fun capturePhotoState() {
     // Invoking photo capture service
-    println("Sending photo capture request")
     Services.takePhoto().subscribe()
   }
 
@@ -93,7 +92,6 @@ class AssemblyControllerActorImpl(
   }
 
   override fun processCapturedPhoto(photoData: ByteArray) {
-    println("Photo captured")
     transition(AssemblyControllerActor.States.SCAN_PHOTO, photoData)
   }
 
