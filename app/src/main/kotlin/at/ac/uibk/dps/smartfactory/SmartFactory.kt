@@ -1,16 +1,11 @@
 package at.ac.uibk.dps.smartfactory
 
-import at.ac.uibk.dps.smartfactory.actors.arm.ArmActor
 import at.ac.uibk.dps.smartfactory.actors.arm.ArmActorImpl
 import at.ac.uibk.dps.smartfactory.actors.assemblycontroller.AssemblyControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.belt.BeltActorImpl
-import at.ac.uibk.dps.smartfactory.actors.jobcontroller.JobControllerActor
 import at.ac.uibk.dps.smartfactory.actors.jobcontroller.JobControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.messageprocessor.MessageProcessorImpl
 import at.ac.uibk.dps.smartfactory.actors.monitor.MonitorActorImpl
-import io.dapr.actors.ActorId
-import io.dapr.actors.client.ActorClient
-import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.actors.runtime.ActorRuntime
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
