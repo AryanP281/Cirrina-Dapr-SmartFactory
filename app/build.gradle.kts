@@ -68,6 +68,10 @@ repositories {
   gradlePluginPortal()
 }
 
+springBoot { mainClass.set("at.ac.uibk.dps.smartfactory.SmartFactoryKt") }
+
+tasks.bootJar { archiveFileName.set("app.jar") }
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
   compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25) }
 }
@@ -82,7 +86,6 @@ tasks.withType<Jar>().configureEach {
   manifest {
     attributes(
       mapOf(
-        "Main-Class" to "at.ac.uibk.dps.smartfactory.SmartFactoryKt",
         "Implementation-Version" to project.version.toString(),
         "Enable-Native-Access" to "ALL-UNNAMED",
       )

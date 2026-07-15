@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@ConditionalOnProperty("app.role", havingValue = "arm")
+@ConditionalOnProperty("role", havingValue = "arm")
 class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"

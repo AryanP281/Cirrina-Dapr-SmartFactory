@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@ConditionalOnProperty("app.role", havingValue = "monitor")
+@ConditionalOnProperty("role", havingValue = "monitor")
 class MessageProcessorSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
