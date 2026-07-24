@@ -20,7 +20,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
       BeltActor.States.LOADING -> {
         if (currentActiveState == BeltActor.States.UNLOADING) {
           // Exit actions
-          unregisterTimer("armPickupTimeout-${id}").block()
+          unregisterTimer("armPickupTimeout-${id}").subscribe()
 
           currentActiveState = targetState
         }
@@ -46,7 +46,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
       BeltActor.States.JOB_DONE -> {
         // Exit actions
         if (currentActiveState == BeltActor.States.UNLOADING)
-          unregisterTimer("armPickupTimeout-${id}").block()
+          unregisterTimer("armPickupTimeout-${id}").subscribe()
 
         currentActiveState = BeltActor.States.JOB_DONE
       }
