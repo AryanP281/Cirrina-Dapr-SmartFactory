@@ -65,7 +65,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
         "armPickupTimeout",
         0,
         Duration.ofSeconds(0),
-        Duration.ofSeconds(10),
+        Duration.ofSeconds(1),
       )
       .subscribe()
   }
