@@ -80,7 +80,7 @@ class AssemblyControllerActorImpl(
       .publishEvent(
         "pubsub",
         "eProcessMessage",
-        mapOf("msg" to "Belt error: Invalid object detected"),
+        mapOf("msg" to "Assembly error: Invalid object detected"),
       )
       .subscribe()
 
