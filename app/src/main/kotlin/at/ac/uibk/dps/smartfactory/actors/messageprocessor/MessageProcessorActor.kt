@@ -11,6 +11,12 @@ interface MessageProcessorActor {
     JOB_DONE,
   }
 
+  enum class ProcessorType {
+    EMAIL,
+    SMS,
+    LOG,
+  }
+
   @ActorMethod(name = "processMessage") fun processMessage(message: String)
 
   @ActorMethod(name = "markJobDone") fun markJobDone()
