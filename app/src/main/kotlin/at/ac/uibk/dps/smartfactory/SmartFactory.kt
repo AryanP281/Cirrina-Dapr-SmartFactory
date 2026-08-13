@@ -17,7 +17,6 @@ val logger = LoggerFactory.getLogger(SmartFactory::class.java)
 
 fun main(args: Array<String>) {
   val role = System.getenv("ROLE")
-  val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
 
   when (role) {
     "jobcontroller" -> ActorRuntime.getInstance().registerActor(JobControllerActorImpl::class.java)
