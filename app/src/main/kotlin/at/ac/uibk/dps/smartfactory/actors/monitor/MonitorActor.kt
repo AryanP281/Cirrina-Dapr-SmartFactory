@@ -15,7 +15,5 @@ interface MonitorActor {
 
   @ActorMethod(name = "markAssembled") fun markAssembled()
 
-  @ActorMethod(name = "incrementProductsCompletedCount") fun incrementProductsCompletedCount()
-
   @ActorMethod(name = "markJobDone") fun markJobDone()
 }

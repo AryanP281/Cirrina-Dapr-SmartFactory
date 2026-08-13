@@ -17,13 +17,6 @@ class MessageProcessorSubscriber {
   private val actorProxy: MonitorActor =
     ActorProxyBuilder(MonitorActor::class.java, ActorClient()).build(ActorId(actorId))
 
-  @Topic(name = "eProductComplete", pubsubName = "pubsub")
-  @PostMapping("/eProductComplete")
-  fun eProductComplete(): ResponseEntity<Unit> {
-    actorProxy.incrementProductsCompletedCount()
-    return ResponseEntity.ok().build()
-  }
-
   @Topic(name = "eScanned", pubsubName = "pubsub")
   @PostMapping("/eScanned")
   fun eScanned(): ResponseEntity<Unit> {

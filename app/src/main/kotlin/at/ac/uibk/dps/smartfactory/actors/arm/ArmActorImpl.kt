@@ -92,7 +92,10 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   }
 
   override fun initiatePickup() {
-    transition(ArmActor.States.PICKUP)
+    val isJobDone = daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value ?: false
+
+    if(!isJobDone)
+      transition(ArmActor.States.PICKUP)
   }
 
   override fun updatePickupStatus(pickupStatus: Boolean) {

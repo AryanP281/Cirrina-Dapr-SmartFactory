@@ -7,6 +7,7 @@ import at.ac.uibk.dps.smartfactory.actors.jobcontroller.JobControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.messageprocessor.MessageProcessorImpl
 import at.ac.uibk.dps.smartfactory.actors.monitor.MonitorActorImpl
 import io.dapr.actors.runtime.ActorRuntime
+import io.dapr.client.DaprClientBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -28,6 +29,12 @@ fun main(args: Array<String>) {
       ActorRuntime.getInstance().registerActor(AssemblyControllerActorImpl::class.java)
     else -> logger.error("Unknown role $role")
   }
+
+  // Creating and saving persistent variables
+  val daprClient = DaprClientBuilder().build()
+  daprClient.saveState("statestore", "isJobDone", false).block()
+  daprClient.saveState("statestore", "logs", mutableListOf<String>()).block()
+  daprClient.saveState("statestore", "productsCompleted", 0).block()
 
   runApplication<SmartFactory>(*args)
 }
