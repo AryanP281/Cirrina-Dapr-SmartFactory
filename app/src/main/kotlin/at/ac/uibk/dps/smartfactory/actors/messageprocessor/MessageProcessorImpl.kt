@@ -5,13 +5,22 @@ import at.ac.uibk.dps.smartfactory.services.Services
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
-import org.slf4j.LoggerFactory
+import io.dapr.client.DaprClientBuilder
 
 class MessageProcessorImpl(
   runtimeContext: ActorRuntimeContext<MessageProcessorImpl>,
   actorId: ActorId,
 ) : AbstractActor(runtimeContext, actorId), MessageProcessorActor {
   private var currentActiveState: MessageProcessorActor.States = MessageProcessorActor.States.IDLE
+  private val processorType : MessageProcessorActor.ProcessorType = (System.getenv("MP_TYPE") ?: "0").let {
+    when(it) {
+      "0" -> MessageProcessorActor.ProcessorType.EMAIL
+      "1" -> MessageProcessorActor.ProcessorType.SMS
+      else -> MessageProcessorActor.ProcessorType.LOG
+    }
+  }
+
+  private val daprClient = DaprClientBuilder().build()
 
   private fun transition(targetState: MessageProcessorActor.States, data: Any? = null) {
     if (currentActiveState == MessageProcessorActor.States.JOB_DONE) return
@@ -44,8 +53,25 @@ class MessageProcessorImpl(
   }
 
   private fun processState(msg: String) {
-    Services.processEmail(MessageProcessingRequest(msg)).subscribe()
+    handleMessage(msg)
 
     transition(MessageProcessorActor.States.IDLE)
+  }
+
+  private fun handleMessage(msg : String)
+  {
+    when(processorType) {
+      MessageProcessorActor.ProcessorType.EMAIL -> {
+        Services.processEmail(MessageProcessingRequest(msg)).subscribe()
+      }
+      MessageProcessorActor.ProcessorType.SMS -> {
+        Services.processSms(MessageProcessingRequest(msg)).subscribe()
+      }
+      MessageProcessorActor.ProcessorType.LOG -> {
+        val logs : MutableList<String> = daprClient.getState("statestore","logs", MutableList::class.java).block()?.value as MutableList<String>? ?: mutableListOf<String>()
+        logs.add(msg)
+        daprClient.saveState("statestore", "logs", logs).block()
+      }
+    }
   }
 }

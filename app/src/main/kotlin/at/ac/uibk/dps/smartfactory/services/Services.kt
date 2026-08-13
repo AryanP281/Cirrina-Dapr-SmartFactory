@@ -35,6 +35,22 @@ object Services {
     return Mono.empty()
   }
 
+  fun processSms(req: MessageProcessingRequest): Mono<Void> {
+    val buffer = threadBuffer.get().apply { writerIndex(0) }
+    fory.serialize(buffer, req)
+
+    val request =
+      HttpRequest.newBuilder()
+        .uri(URI.create("$baseUrl/process/sms"))
+        .header("Content-Type", "application/x-fury")
+        .POST(HttpRequest.BodyPublishers.ofByteArray(buffer.getBytes(0, buffer.writerIndex())))
+        .build()
+
+    client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+
+    return Mono.empty()
+  }
+
   fun sendStatistics(req: StatisticsRequest): Mono<Void> {
     val buffer = threadBuffer.get().apply { writerIndex(0) }
     fory.serialize(buffer, req)
