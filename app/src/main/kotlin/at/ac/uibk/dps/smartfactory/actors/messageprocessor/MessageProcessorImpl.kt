@@ -13,8 +13,6 @@ class MessageProcessorImpl(
 ) : AbstractActor(runtimeContext, actorId), MessageProcessorActor {
   private var currentActiveState: MessageProcessorActor.States = MessageProcessorActor.States.IDLE
 
-  private val logger = LoggerFactory.getLogger(MessageProcessorImpl::class.java)
-
   private fun transition(targetState: MessageProcessorActor.States, data: Any? = null) {
     if (currentActiveState == MessageProcessorActor.States.JOB_DONE) return
 
