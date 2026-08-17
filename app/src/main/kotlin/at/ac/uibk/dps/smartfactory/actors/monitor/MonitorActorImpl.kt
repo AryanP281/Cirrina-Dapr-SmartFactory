@@ -6,7 +6,6 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
 import io.dapr.client.DaprClientBuilder
-import org.slf4j.LoggerFactory
 
 class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id: ActorId) :
   AbstractActor(runtimeContext, id), MonitorActor {
@@ -16,8 +15,6 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
   private var nAssemblies = 0
 
   private val daprClient = DaprClientBuilder().build()
-
-  private val logger = LoggerFactory.getLogger(MonitorActorImpl::class.java)
 
   override fun markScanned() {
     if (currentActiveState == MonitorActor.States.MONITORING) {
@@ -43,10 +40,18 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     }
   }
 
-  private fun sendStatistics()
-  {
-    val jobDone = daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value ?: false
-    val productsCompleted = daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value ?: 0
+  private fun sendStatistics() {
+    val jobDone =
+      daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value ?: false
+    val productsCompleted =
+      daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value ?: 0
+
+    println(
+      "JobDone: ${daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value}"
+    )
+    println(
+      "Completed: ${daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value}"
+    )
 
     // Invoke SendStatistics service
     Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))

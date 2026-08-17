@@ -12,13 +12,14 @@ class MessageProcessorImpl(
   actorId: ActorId,
 ) : AbstractActor(runtimeContext, actorId), MessageProcessorActor {
   private var currentActiveState: MessageProcessorActor.States = MessageProcessorActor.States.IDLE
-  private val processorType : MessageProcessorActor.ProcessorType = (System.getenv("MP_TYPE") ?: "0").let {
-    when(it) {
-      "0" -> MessageProcessorActor.ProcessorType.EMAIL
-      "1" -> MessageProcessorActor.ProcessorType.SMS
-      else -> MessageProcessorActor.ProcessorType.LOG
+  private val processorType: MessageProcessorActor.ProcessorType =
+    (System.getenv("MP_TYPE") ?: "0").let {
+      when (it) {
+        "0" -> MessageProcessorActor.ProcessorType.EMAIL
+        "1" -> MessageProcessorActor.ProcessorType.SMS
+        else -> MessageProcessorActor.ProcessorType.LOG
+      }
     }
-  }
 
   private val daprClient = DaprClientBuilder().build()
 
@@ -58,9 +59,8 @@ class MessageProcessorImpl(
     transition(MessageProcessorActor.States.IDLE)
   }
 
-  private fun handleMessage(msg : String)
-  {
-    when(processorType) {
+  private fun handleMessage(msg: String) {
+    when (processorType) {
       MessageProcessorActor.ProcessorType.EMAIL -> {
         Services.processEmail(MessageProcessingRequest(msg)).subscribe()
       }
@@ -68,7 +68,9 @@ class MessageProcessorImpl(
         Services.processSms(MessageProcessingRequest(msg)).subscribe()
       }
       MessageProcessorActor.ProcessorType.LOG -> {
-        val logs : MutableList<String> = daprClient.getState("statestore","logs", MutableList::class.java).block()?.value as MutableList<String>? ?: mutableListOf<String>()
+        val logs: MutableList<String> =
+          daprClient.getState("statestore", "logs", MutableList::class.java).block()?.value
+            as MutableList<String>? ?: mutableListOf<String>()
         logs.add(msg)
         daprClient.saveState("statestore", "logs", logs).block()
       }

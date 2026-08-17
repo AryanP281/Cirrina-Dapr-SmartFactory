@@ -20,15 +20,16 @@ class JobControllerActorImpl(
 
   override fun markProductCompleted() {
     if (currActiveState == JobControllerActor.States.RUNNING) {
-      daprClient.getState("statestore","productsCompleted", Int::class.java).block()?.value.let {
-        daprClient.saveState("statestore", "productsCompleted", (it ?: 0)+1).block()
+      daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value.let {
+        daprClient.saveState("statestore", "productsCompleted", (it ?: 0) + 1).block()
       }
       this.checkJobDone()
     }
   }
 
   private fun checkJobDone() {
-    val productsCompleted = daprClient.getState("statestore","productsCompleted", Int::class.java).block()?.value ?: 0
+    val productsCompleted =
+      daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value ?: 0
     if (productsCompleted >= totalProducts) transition(JobControllerActor.States.JOB_DONE)
   }
 
@@ -65,7 +66,7 @@ class JobControllerActorImpl(
   }
 
   private fun jobDoneState() {
-    //Updating job done status
+    // Updating job done status
     daprClient.saveState("statestore", "isJobDone", true).block()
 
     // Emit event to Message Processor
