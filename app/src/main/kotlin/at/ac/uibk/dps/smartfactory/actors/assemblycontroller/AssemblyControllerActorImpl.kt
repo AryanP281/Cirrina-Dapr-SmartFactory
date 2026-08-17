@@ -12,7 +12,7 @@ class AssemblyControllerActorImpl(
   id: ActorId,
 ) : AbstractActor(runtimeContext, id), AssemblyControllerActor {
 
-  private var waitingParts : Long = 0
+  private var waitingParts: Long = 0
 
   private var currentActiveState: AssemblyControllerActor.States =
     AssemblyControllerActor.States.DETECTING_START
@@ -53,7 +53,7 @@ class AssemblyControllerActorImpl(
             currentActiveState == AssemblyControllerActor.States.UNLOADING
         )
           currentActiveState = AssemblyControllerActor.States.DETECTING_START
-          detectingStartState()
+        detectingStartState()
       }
 
       AssemblyControllerActor.States.UNLOADING -> {
@@ -67,10 +67,8 @@ class AssemblyControllerActorImpl(
     }
   }
 
-  private fun detectingStartState()
-  {
-    if(waitingParts > 0)
-    {
+  private fun detectingStartState() {
+    if (waitingParts > 0) {
       waitingParts--
       transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
     }
@@ -104,7 +102,7 @@ class AssemblyControllerActorImpl(
   }
 
   override fun detectedAtStart() {
-    waitingParts = if(waitingParts == Long.MAX_VALUE) Long.MAX_VALUE else waitingParts+1
+    waitingParts = if (waitingParts == Long.MAX_VALUE) Long.MAX_VALUE else waitingParts + 1
     transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
   }
 
