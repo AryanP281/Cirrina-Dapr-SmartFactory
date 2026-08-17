@@ -15,6 +15,8 @@ interface AssemblyControllerActor {
     JOB_DONE,
   }
 
+  @ActorMethod(name = "initialize") fun initialize()
+
   @ActorMethod(name = "detectedAtStart") fun detectedAtStart()
 
   @ActorMethod(name = "processCapturedPhoto") fun processCapturedPhoto(photoData: ByteArray)
