@@ -66,11 +66,11 @@ class JobControllerActorImpl(
   }
 
   private fun jobDoneState() {
-    // Updating job done status
-    daprClient.saveState("statestore", "isJobDone", true).block()
-
     // Emit event to Message Processor
     daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job done...")).subscribe()
+
+    // Updating job done status
+    daprClient.saveState("statestore", "isJobDone", true).block()
 
     // Emit JobDone
     daprClient.publishEvent("pubsub", "eJobDone", mapOf<String, Any>()).subscribe()
