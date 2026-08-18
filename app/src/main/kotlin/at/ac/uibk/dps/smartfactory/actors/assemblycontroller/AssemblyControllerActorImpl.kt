@@ -2,6 +2,7 @@ package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
 
 import at.ac.uibk.dps.smartfactory.api.PhotoScanRequest
 import at.ac.uibk.dps.smartfactory.services.Services
+import at.ac.uibk.dps.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
@@ -11,13 +12,15 @@ class AssemblyControllerActorImpl(
   runtimeContext: ActorRuntimeContext<AssemblyControllerActorImpl>,
   id: ActorId,
 ) : AbstractActor(runtimeContext, id), AssemblyControllerActor {
-
   private var waitingParts: Long = 0
 
   private var currentActiveState: AssemblyControllerActor.States =
     AssemblyControllerActor.States.DETECTING_START
 
   private val daprClient = DaprClientBuilder().build()
+
+  //Measurement vars
+  var firstDetection = true
 
   private fun transition(targetState: AssemblyControllerActor.States, data: Any? = null) {
     when (targetState) {
@@ -103,6 +106,14 @@ class AssemblyControllerActorImpl(
 
   override fun detectedAtStart() {
     waitingParts = if (waitingParts == Long.MAX_VALUE) Long.MAX_VALUE else waitingParts + 1
+
+    //Checking if first detection
+    if(firstDetection) {
+      //Emitting event to begin production time measurement
+      daprClient.publishEvent("pubsub", "eProductionStarted", mapOf("emitTime" to Utils.getEmittedTimeNs())).subscribe()
+      firstDetection = false
+    }
+
     transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
   }
 

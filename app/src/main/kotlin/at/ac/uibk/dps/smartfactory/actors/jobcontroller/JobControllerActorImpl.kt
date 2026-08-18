@@ -1,9 +1,11 @@
 package at.ac.uibk.dps.smartfactory.actors.jobcontroller
 
+import at.ac.uibk.dps.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
 import io.dapr.client.DaprClientBuilder
+import kotlin.time.Clock
 
 class JobControllerActorImpl(
   runtimeContext: ActorRuntimeContext<JobControllerActorImpl>,
@@ -73,6 +75,6 @@ class JobControllerActorImpl(
     daprClient.saveState("statestore", "isJobDone", true).block()
 
     // Emit JobDone
-    daprClient.publishEvent("pubsub", "eJobDone", mapOf<String, Any>()).subscribe()
+    daprClient.publishEvent("pubsub", "eJobDone", mapOf("emitTime" to Utils.getEmittedTimeNs())).subscribe()
   }
 }
