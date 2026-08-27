@@ -1,6 +1,8 @@
 package at.ac.uibk.dps.smartfactory.actors.belt
 
+import at.ac.uibk.dps.smartfactory.logger
 import at.ac.uibk.dps.smartfactory.services.Services
+import at.ac.uibk.dps.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
@@ -51,6 +53,8 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
         currentActiveState = BeltActor.States.JOB_DONE
       }
     }
+
+    logger.info("In state: ${currentActiveState.name}")
   }
 
   private fun transportingState() {
@@ -89,7 +93,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   override fun armPickupTimeout(): Mono<Void> {
     if (currentActiveState == BeltActor.States.UNLOADING) {
       // Raising eArmPickup
-      daprClient.publishEvent("pubsub", "eArmPickup", mapOf<String, Any>()).subscribe()
+      Utils.publishEvent(daprClient,"pubsub", "eArmPickup", mutableMapOf<String, Any?>()).subscribe()
     }
 
     return Mono.empty()

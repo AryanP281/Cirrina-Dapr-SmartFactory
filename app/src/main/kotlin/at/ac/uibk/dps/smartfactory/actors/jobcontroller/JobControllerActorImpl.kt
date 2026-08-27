@@ -5,13 +5,12 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
 import io.dapr.client.DaprClientBuilder
-import kotlin.time.Clock
 
 class JobControllerActorImpl(
   runtimeContext: ActorRuntimeContext<JobControllerActorImpl>,
   id: ActorId,
 ) : AbstractActor(runtimeContext, id), JobControllerActor {
-  private val totalProducts = 10
+  private val totalProducts = 1
   private var currActiveState: JobControllerActor.States = JobControllerActor.States.STARTING
 
   private val daprClient = DaprClientBuilder().build()
@@ -59,9 +58,7 @@ class JobControllerActorImpl(
 
   private fun startingState() {
     // Emit event to Message Processor
-    daprClient
-      .publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job started..."))
-      .subscribe()
+    Utils.publishEvent(daprClient,"pubsub", "eProcessMessage", mutableMapOf("msg" to "Job started...")).subscribe()
 
     // Transition to running state
     transition(JobControllerActor.States.RUNNING)
@@ -69,12 +66,12 @@ class JobControllerActorImpl(
 
   private fun jobDoneState() {
     // Emit event to Message Processor
-    daprClient.publishEvent("pubsub", "eProcessMessage", mapOf("msg" to "Job done...")).subscribe()
+    Utils.publishEvent(daprClient,"pubsub", "eProcessMessage", mutableMapOf("msg" to "Job done...")).subscribe()
 
     // Updating job done status
     daprClient.saveState("statestore", "isJobDone", true).block()
 
     // Emit JobDone
-    daprClient.publishEvent("pubsub", "eJobDone", mapOf("emitTime" to Utils.getEmittedTimeNs())).subscribe()
+    Utils.publishEvent(daprClient,"pubsub", "eJobDone", mutableMapOf()).subscribe()
   }
 }
