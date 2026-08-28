@@ -47,6 +47,9 @@ dependencies {
   // Logging
   implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
 
+  //Metrics
+  implementation("io.dropwizard.metrics:metrics-core:4.2.38")
+
   // Dagger
   implementation("com.google.dagger:dagger:2.59.2")
   kapt("com.google.dagger:dagger-compiler:2.59.2")
