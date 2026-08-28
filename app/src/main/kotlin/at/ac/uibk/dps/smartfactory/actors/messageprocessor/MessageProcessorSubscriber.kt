@@ -1,5 +1,8 @@
 package at.ac.uibk.dps.smartfactory.actors.messageprocessor
 
+import at.ac.uibk.dps.smartfactory.metrics
+import at.ac.uibk.dps.smartfactory.utils.Utils
+import com.codahale.metrics.Timer
 import io.dapr.Topic
 import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
 
 @RestController
 @ConditionalOnProperty("role", havingValue = "messageprocessor")
@@ -19,17 +23,44 @@ class MessageProcessorSubscriber {
   private val actorProxy: MessageProcessorActor =
     ActorProxyBuilder(MessageProcessorActor::class.java, ActorClient()).build(ActorId(actorId))
 
+  private val eventTimer : Timer = metrics.timer("event.latency")
+  private val processEventTimer : Timer = metrics.timer("processEvent.time")
+
   @Topic(name = "eProcessMessage", pubsubName = "pubsub")
   @PostMapping("/eProcessMessage")
-  fun eProcessMessage(@RequestBody event: CloudEvent<Map<String, String>>): ResponseEntity<Unit> {
-    actorProxy.processMessage(event.data["msg"] ?: "")
+  fun eProcessMessage(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
+    actorProxy.processMessage(event.data["msg"] as? String ?: "")
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(): ResponseEntity<Unit> {
+  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.markJobDone()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 }
