@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
   //Initializing metrics
   val metricsPeriod = System.getenv("METRICS_PERIOD")?.toLong() ?: 1L
   CsvReporter.forRegistry(metrics)
-    .build(File("./metrics"))
+    .build(File("./metrics/${System.getenv("ACTOR_ID") ?: "actor-0"}"))
     .start(metricsPeriod, TimeUnit.SECONDS)
 
   runApplication<SmartFactory>(*args)
