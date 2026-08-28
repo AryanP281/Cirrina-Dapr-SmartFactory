@@ -1,5 +1,8 @@
 package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
 
+import at.ac.uibk.dps.smartfactory.metrics
+import at.ac.uibk.dps.smartfactory.utils.Utils
+import com.codahale.metrics.Timer
 import io.dapr.Topic
 import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
 
 @RestController
 @ConditionalOnProperty("role", havingValue = "assemblycontroller")
@@ -21,56 +25,143 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   private val actorProxy: AssemblyControllerActor =
     ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
 
+  private val eventTimer : Timer = metrics.timer("event.latency")
+  private val processEventTimer : Timer = metrics.timer("processEvent.time")
+
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     actorProxy.initialize()
   }
 
   @Topic(name = "eBeamInterruptedStart", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedStart")
-  fun eBeamInterruptedStart(): ResponseEntity<Unit> {
+  fun eBeamInterruptedStart(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.detectedAtStart()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
   @PostMapping("/ePhotoCaptured")
-  fun ePhotoCaptured(@RequestBody event: CloudEvent<Map<String, ByteArray>>): ResponseEntity<Unit> {
-    actorProxy.processCapturedPhoto(event.data["data"] ?: byteArrayOf())
+  fun ePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
+    actorProxy.processCapturedPhoto(event.data["data"] as? ByteArray ?: byteArrayOf())
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
-  fun ePhotoScanned(@RequestBody event: CloudEvent<Map<String, Boolean>>): ResponseEntity<Unit> {
-    actorProxy.processPhotoScan(event.data["validObject"] ?: false)
+  fun ePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
+    actorProxy.processPhotoScan(event.data["validObject"] as? Boolean ?: false)
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eObjectDiscarded", pubsubName = "pubsub")
   @PostMapping("/eObjectDiscarded")
-  fun eObjectDiscarded(): ResponseEntity<Unit> {
+  fun eObjectDiscarded(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.objectDiscarded()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eBeamInterruptedEnd", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedEnd")
-  fun eBeamInterruptedEnd(): ResponseEntity<Unit> {
+  fun eBeamInterruptedEnd(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.detectedAtEnd()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun ePickedUp(): ResponseEntity<Unit> {
+  fun ePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.processPickup()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(): ResponseEntity<Unit> {
+  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+
+    //Logging event latency
+    val eventEmitTime = event.data["emittedTime"]!! as Long
+    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     actorProxy.markJobDone()
+
+    //Logging event processing time
+    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
+    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     return ResponseEntity.ok().build()
   }
 }
