@@ -11,11 +11,15 @@ import io.dapr.client.DaprClientBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import com.codahale.metrics.CsvReporter
+import com.codahale.metrics.MetricRegistry
+import java.io.File
+import java.util.concurrent.TimeUnit
 
 @SpringBootApplication class SmartFactory
 
 val logger = LoggerFactory.getLogger(SmartFactory::class.java)
-
+val metrics = MetricRegistry()
 fun main(args: Array<String>) {
   val role = System.getenv("ROLE")
 
@@ -35,6 +39,12 @@ fun main(args: Array<String>) {
   daprClient.saveState("statestore", "isJobDone", false).block()
   daprClient.saveState("statestore", "logs", mutableListOf<String>()).block()
   daprClient.saveState("statestore", "productsCompleted", 0).block()
+
+  //Initializing metrics
+  val metricsPeriod = System.getenv("METRICS_PERIOD")?.toLong() ?: 1L
+  CsvReporter.forRegistry(metrics)
+    .build(File("./metrics"))
+    .start(metricsPeriod, TimeUnit.SECONDS)
 
   runApplication<SmartFactory>(*args)
 }
