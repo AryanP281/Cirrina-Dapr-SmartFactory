@@ -1,6 +1,5 @@
 package at.ac.uibk.dps.smartfactory.actors.arm
 
-import at.ac.uibk.dps.smartfactory.logger
 import at.ac.uibk.dps.smartfactory.services.Services
 import at.ac.uibk.dps.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
@@ -27,7 +26,13 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           // Transition Actions
           if (partsAssembled >= partsPerProduct) {
             partsAssembled = 0
-            Utils.publishEvent(daprClient,"pubsub", "eProductComplete", mutableMapOf<String, Any?>()).subscribe()
+            Utils.publishEvent(
+                daprClient,
+                "pubsub",
+                "eProductComplete",
+                mutableMapOf<String, Any?>(),
+              )
+              .subscribe()
           }
 
           currActiveState = targetState
@@ -47,7 +52,8 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           // Transition actions
           if (currActiveState == ArmActor.States.PICKUP) {
             // Raise ePickedUp
-            Utils.publishEvent(daprClient,"pubsub", "ePickedUp", mutableMapOf<String, Any?>()).subscribe()
+            Utils.publishEvent(daprClient, "pubsub", "ePickedUp", mutableMapOf<String, Any?>())
+              .subscribe()
           }
 
           currActiveState = targetState
@@ -75,7 +81,13 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           // Transition Actions
           if (currActiveState == ArmActor.States.ASSEMBLE) {
             partsAssembled++
-            Utils.publishEvent(daprClient,"pubsub", "eAssemblyComplete", mutableMapOf<String, Any?>()).subscribe()
+            Utils.publishEvent(
+                daprClient,
+                "pubsub",
+                "eAssemblyComplete",
+                mutableMapOf<String, Any?>(),
+              )
+              .subscribe()
           }
 
           currActiveState = targetState
@@ -87,8 +99,6 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
         currActiveState = targetState
       }
     }
-
-    logger.info("In state: ${currActiveState.name}")
   }
 
   override fun initialize() {
@@ -140,10 +150,13 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
 
   private fun errorState() {
     // Raise eProcessMessage
-    Utils.publishEvent(daprClient,
-      "pubsub",
-      "eProcessMessage",
-      mutableMapOf("msg" to "Fatal robotic arm failure: $errorMsg")).subscribe()
+    Utils.publishEvent(
+        daprClient,
+        "pubsub",
+        "eProcessMessage",
+        mutableMapOf("msg" to "Fatal robotic arm failure: $errorMsg"),
+      )
+      .subscribe()
 
     // Starting timer eRetry
     registerActorTimer(

@@ -8,6 +8,7 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
+import java.util.concurrent.TimeUnit
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
@@ -15,7 +16,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.concurrent.TimeUnit
+import kotlin.time.measureTime
+import kotlin.time.toJavaDuration
 
 @RestController
 @ConditionalOnProperty("role", havingValue = "arm")
@@ -25,8 +27,8 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
   private val actorProxy: ArmActor =
     ActorProxyBuilder(ArmActor::class.java, ActorClient()).build(ActorId(actorId))
 
-    private val eventTimer : Timer = metrics.timer("event.latency")
-  private val processEventTimer : Timer = metrics.timer("processEvent.time")
+  private val eventTimer: Timer = metrics.timer("event.latency")
+  private val processEventTimer: Timer = metrics.timer("processEvent.time")
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     actorProxy.initialize()
@@ -35,18 +37,17 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
   @Topic(name = "eArmPickup", pubsubName = "pubsub")
   @PostMapping("/eArmPickup")
   fun eArmPickup(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime : Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.initiatePickup()
+    }
 
-    actorProxy.initiatePickup()
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
@@ -54,39 +55,35 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
   @Topic(name = "eMarkPickedUp", pubsubName = "pubsub")
   @PostMapping("/eMarkPickedUp")
   fun eMarkPickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.markPickedUp()
+    }
 
-    actorProxy.markPickedUp()
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eUpdatePickupStatus", pubsubName = "pubsub")
   @PostMapping("/eUpdatePickupStatus")
-  fun eUpdatePickupStatus(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+  fun eUpdatePickupStatus(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.updatePickupStatus(event.data["success"]!! as Boolean)
+    }
 
-    actorProxy.updatePickupStatus(event.data["success"]!! as Boolean)
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
@@ -96,60 +93,53 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
   fun eCheckAssembleSuccess(
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.updateAssemblyStatus(event.data["success"]!! as Boolean)
+    }
 
-    actorProxy.updateAssemblyStatus(event.data["success"]!! as Boolean)
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eResetArm", pubsubName = "pubsub")
   @PostMapping("/eResetArm")
-  fun eResetArm(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+  fun eResetArm(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.armReset()
+    }
 
-    actorProxy.armReset()
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
-    val processStartTime = Utils.getCurrentTimeNs() //The start time of processing the event
+  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+    val delta = measureTime {
+      // Logging event latency
+      val eventEmitTime = event.data["emittedTime"]!! as Long
+      val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    //Logging event latency
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    var deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-    eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+      actorProxy.markJobDone()
+    }
 
-    actorProxy.markJobDone()
-
-    //Logging event processing time
-    deltaTime = (Utils.getCurrentTimeNs() - processStartTime).coerceAtLeast(0)
-    processEventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+    // Logging event processing time
+    processEventTimer.update(delta.toJavaDuration())
 
     return ResponseEntity.ok().build()
   }
