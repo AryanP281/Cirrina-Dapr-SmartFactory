@@ -58,7 +58,13 @@ class JobControllerActorImpl(
 
   private fun startingState() {
     // Emit event to Message Processor
-    Utils.publishEvent(daprClient,"pubsub", "eProcessMessage", mutableMapOf("msg" to "Job started...")).subscribe()
+    Utils.publishEvent(
+        daprClient,
+        "pubsub",
+        "eProcessMessage",
+        mutableMapOf("msg" to "Job started..."),
+      )
+      .subscribe()
 
     // Transition to running state
     transition(JobControllerActor.States.RUNNING)
@@ -66,12 +72,18 @@ class JobControllerActorImpl(
 
   private fun jobDoneState() {
     // Emit event to Message Processor
-    Utils.publishEvent(daprClient,"pubsub", "eProcessMessage", mutableMapOf("msg" to "Job done...")).subscribe()
+    Utils.publishEvent(
+        daprClient,
+        "pubsub",
+        "eProcessMessage",
+        mutableMapOf("msg" to "Job done..."),
+      )
+      .subscribe()
 
     // Updating job done status
     daprClient.saveState("statestore", "isJobDone", true).block()
 
     // Emit JobDone
-    Utils.publishEvent(daprClient,"pubsub", "eJobDone", mutableMapOf()).subscribe()
+    Utils.publishEvent(daprClient, "pubsub", "eJobDone", mutableMapOf()).subscribe()
   }
 }

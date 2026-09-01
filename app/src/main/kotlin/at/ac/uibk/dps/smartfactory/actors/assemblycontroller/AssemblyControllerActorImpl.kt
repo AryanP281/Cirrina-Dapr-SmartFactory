@@ -1,7 +1,6 @@
 package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
 
 import at.ac.uibk.dps.smartfactory.api.PhotoScanRequest
-import at.ac.uibk.dps.smartfactory.logger
 import at.ac.uibk.dps.smartfactory.services.Services
 import at.ac.uibk.dps.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
@@ -69,8 +68,6 @@ class AssemblyControllerActorImpl(
         currentActiveState = AssemblyControllerActor.States.JOB_DONE
       }
     }
-
-    logger.info("In state: ${currentActiveState.name}")
   }
 
   private fun detectingStartState() {
@@ -92,10 +89,13 @@ class AssemblyControllerActorImpl(
 
   private fun errorState() {
     // Raise eProcessMessage
-    Utils.publishEvent(daprClient,
-      "pubsub",
-      "eProcessMessage",
-      mutableMapOf("msg" to "Assembly error: Invalid object detected")).subscribe()
+    Utils.publishEvent(
+        daprClient,
+        "pubsub",
+        "eProcessMessage",
+        mutableMapOf("msg" to "Assembly error: Invalid object detected"),
+      )
+      .subscribe()
 
     Services.discardObject().subscribe()
   }
@@ -110,7 +110,7 @@ class AssemblyControllerActorImpl(
     // Checking if first detection
     if (firstDetection) {
       // Emitting event to begin production time measurement
-      Utils.publishEvent(daprClient,"pubsub", "eProductionStarted", mutableMapOf()).subscribe()
+      Utils.publishEvent(daprClient, "pubsub", "eProductionStarted", mutableMapOf()).subscribe()
       firstDetection = false
     }
 
@@ -123,11 +123,12 @@ class AssemblyControllerActorImpl(
 
   override fun processPhotoScan(scanStatus: Boolean) {
     // Raising eScanned
-    Utils.publishEvent(daprClient,"pubsub", "eScanned", mutableMapOf<String, Any?>()).subscribe()
+    Utils.publishEvent(daprClient, "pubsub", "eScanned", mutableMapOf<String, Any?>()).subscribe()
 
     if (scanStatus) {
       // Raise eObjectValid
-      Utils.publishEvent(daprClient,"pubsub", "eObjectValid", mutableMapOf<String, Any?>()).subscribe()
+      Utils.publishEvent(daprClient, "pubsub", "eObjectValid", mutableMapOf<String, Any?>())
+        .subscribe()
 
       transition(AssemblyControllerActor.States.DETECTING_END)
     } else transition(AssemblyControllerActor.States.ERROR)
@@ -139,7 +140,8 @@ class AssemblyControllerActorImpl(
 
   override fun detectedAtEnd() {
     // Raising eStartUnload
-    Utils.publishEvent(daprClient,"pubsub", "eStartUnload", mutableMapOf<String, Any?>()).subscribe()
+    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf<String, Any?>())
+      .subscribe()
 
     transition(AssemblyControllerActor.States.UNLOADING)
   }
