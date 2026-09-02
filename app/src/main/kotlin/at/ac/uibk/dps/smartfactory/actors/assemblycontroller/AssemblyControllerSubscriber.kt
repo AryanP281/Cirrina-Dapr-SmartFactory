@@ -10,6 +10,8 @@ import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
 import java.util.Base64
 import java.util.concurrent.TimeUnit
+import kotlin.time.measureTime
+import kotlin.time.toJavaDuration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
@@ -17,8 +19,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import kotlin.time.measureTime
-import kotlin.time.toJavaDuration
 
 @RestController
 @ConditionalOnProperty("role", havingValue = "assemblycontroller")
@@ -64,7 +64,9 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.processCapturedPhoto(Base64.getDecoder().decode(event.data["data"] as? String ?: ""))
+      actorProxy.processCapturedPhoto(
+        Base64.getDecoder().decode(event.data["data"] as? String ?: "")
+      )
     }
 
     // Logging event processing time

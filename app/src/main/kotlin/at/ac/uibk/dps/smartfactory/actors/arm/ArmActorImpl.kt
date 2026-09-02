@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 
 class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorId) :
   AbstractActor(runtimeContext, id), ArmActor {
-  private val partsPerProduct = 100
+  private val partsPerProduct = 1000
   private var currActiveState = ArmActor.States.IDLE
   private var pickupSuccess = true
   private var errorMsg = ""

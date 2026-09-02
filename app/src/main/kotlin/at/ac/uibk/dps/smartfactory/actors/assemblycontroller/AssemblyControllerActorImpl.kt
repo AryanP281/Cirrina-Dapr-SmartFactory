@@ -26,6 +26,7 @@ class AssemblyControllerActorImpl(
     when (targetState) {
       AssemblyControllerActor.States.CAPTURE_PHOTO -> {
         if (currentActiveState == AssemblyControllerActor.States.DETECTING_START) {
+          waitingParts -= 1
           currentActiveState = AssemblyControllerActor.States.CAPTURE_PHOTO
           capturePhotoState()
         }
@@ -54,9 +55,10 @@ class AssemblyControllerActorImpl(
         if (
           currentActiveState == AssemblyControllerActor.States.ERROR ||
             currentActiveState == AssemblyControllerActor.States.UNLOADING
-        )
+        ) {
           currentActiveState = AssemblyControllerActor.States.DETECTING_START
-        detectingStartState()
+          detectingStartState()
+        }
       }
 
       AssemblyControllerActor.States.UNLOADING -> {
@@ -72,7 +74,6 @@ class AssemblyControllerActorImpl(
 
   private fun detectingStartState() {
     if (waitingParts > 0) {
-      waitingParts--
       transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
     }
   }
