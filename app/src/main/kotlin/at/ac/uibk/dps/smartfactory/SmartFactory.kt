@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry
 import io.dapr.actors.runtime.ActorRuntime
 import io.dapr.client.DaprClientBuilder
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -23,6 +24,8 @@ val metrics = MetricRegistry()
 
 fun main(args: Array<String>) {
   val role = System.getenv("ROLE")
+
+  ActorRuntime.getInstance().config.setActorIdleTimeout(Duration.ofHours(24))
 
   when (role) {
     "jobcontroller" -> ActorRuntime.getInstance().registerActor(JobControllerActorImpl::class.java)
