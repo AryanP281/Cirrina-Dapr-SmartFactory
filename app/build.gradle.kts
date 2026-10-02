@@ -18,7 +18,7 @@ version =
     .trim()
 
 application {
-  mainClass.set("at.ac.uibk.dps.smartfactory.SmartFactoryKt")
+  mainClass.set(" ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt")
   applicationName = "smartfactory"
 }
 
@@ -72,7 +72,7 @@ repositories {
   gradlePluginPortal()
 }
 
-springBoot { mainClass.set("at.ac.uibk.dps.smartfactory.SmartFactoryKt") }
+springBoot { mainClass.set(" ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt") }
 
 tasks.bootJar { archiveFileName.set("app.jar") }
 
