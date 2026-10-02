@@ -46,14 +46,14 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           }
 
           state = targetState
-          idleState()
+          enterIdle()
         }
       }
 
       State.PICKUP -> {
         if (state == State.IDLE) {
           state = targetState
-          pickupState()
+          enterPickup()
         }
       }
 
@@ -67,7 +67,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           }
 
           state = targetState
-          assembleState()
+          enterAssemble()
         }
       }
 
@@ -80,7 +80,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           if (state == State.ASSEMBLE) errorMsg = "Assemble failed..."
 
           state = targetState
-          errorState()
+          enterError()
         }
       }
 
@@ -101,7 +101,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
           }
 
           state = targetState
-          returnState()
+          enterReturn()
         }
       }
 
@@ -112,7 +112,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   }
 
   override fun initialize() {
-    idleState()
+    enterIdle()
   }
 
   override fun initiatePickup() {
@@ -144,21 +144,21 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
     transition(State.IDLE)
   }
 
-  private fun idleState() {
+  private fun enterIdle() {
     if (!pickupSuccess) transition(State.PICKUP)
   }
 
-  private fun pickupState() {
+  private fun enterPickup() {
     // Invoke arm pickup
     Services.pickUp().subscribe()
   }
 
-  private fun assembleState() {
+  private fun enterAssemble() {
     // Invoke Assemble
     Services.assemble().subscribe()
   }
 
-  private fun errorState() {
+  private fun enterError() {
     // Raise eProcessMessage
     Utils.publishEvent(
         daprClient,
@@ -179,7 +179,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
       .subscribe()
   }
 
-  private fun returnState() {
+  private fun enterReturn() {
     // Invoke return to start action
     Services.returnToStart().subscribe()
   }
