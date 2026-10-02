@@ -7,8 +7,8 @@ import io.dapr.actors.runtime.AbstractActor
 import io.dapr.actors.runtime.ActorRuntimeContext
 import io.dapr.client.DaprClientBuilder
 
-class MessageProcessorImpl(
-  runtimeContext: ActorRuntimeContext<MessageProcessorImpl>,
+class MessageProcessorActorImpl(
+  runtimeContext: ActorRuntimeContext<MessageProcessorActorImpl>,
   actorId: ActorId,
 ) : AbstractActor(runtimeContext, actorId), MessageProcessorActor {
 
