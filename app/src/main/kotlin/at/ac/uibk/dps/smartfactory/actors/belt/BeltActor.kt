@@ -7,13 +7,13 @@ import reactor.core.publisher.Mono
 @ActorType(name = "Belt")
 interface BeltActor {
 
-  @ActorMethod(name = "markObjectValidity") fun markObjectValidity()
+   fun markObjectValidity()
 
-  @ActorMethod(name = "startUnloading") fun startUnloading()
+   fun startUnloading()
 
-  @ActorMethod(name = "markJobDone") fun markJobDone()
+   fun markJobDone()
 
-  @ActorMethod(name = "markPickedUp") fun markPickedUp()
+   fun markPickedUp()
 
-  @ActorMethod(name = "armPickupTimeout") fun armPickupTimeout(): Mono<Void>
+   fun armPickupTimeout(): Mono<Void>
 }
