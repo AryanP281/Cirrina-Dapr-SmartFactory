@@ -6,14 +6,6 @@ import reactor.core.publisher.Mono
 
 @ActorType(name = "arm")
 interface ArmActor {
-  enum class States {
-    IDLE,
-    ERROR,
-    PICKUP,
-    ASSEMBLE,
-    RETURN,
-    JOB_DONE,
-  }
 
   @ActorMethod(name = "initialize") fun initialize()
 
