@@ -25,14 +25,14 @@ import org.springframework.web.bind.annotation.RestController
 class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: AssemblyControllerActor =
+  private val proxy: AssemblyControllerActor =
     ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
-    actorProxy.initialize()
+    proxy.initialize()
   }
 
   @Topic(name = "eBeamInterruptedStart", pubsubName = "pubsub")
@@ -46,7 +46,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.detectedAtStart()
+      proxy.detectedAtStart()
     }
 
     // Logging event processing time
@@ -64,7 +64,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.processCapturedPhoto(
+      proxy.processCapturedPhoto(
         Base64.getDecoder().decode(event.data["data"] as? String ?: "")
       )
     }
@@ -84,7 +84,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.processPhotoScan(event.data["validObject"] as? Boolean ?: false)
+      proxy.processPhotoScan(event.data["validObject"] as? Boolean ?: false)
     }
 
     // Logging event processing time
@@ -102,7 +102,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.objectDiscarded()
+      proxy.objectDiscarded()
     }
 
     // Logging event processing time
@@ -120,7 +120,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.detectedAtEnd()
+      proxy.detectedAtEnd()
     }
 
     // Logging event processing time
@@ -138,7 +138,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.processPickup()
+      proxy.processPickup()
     }
 
     // Logging event processing time
@@ -156,7 +156,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markJobDone()
+      proxy.markJobDone()
     }
 
     // Logging event processing time
