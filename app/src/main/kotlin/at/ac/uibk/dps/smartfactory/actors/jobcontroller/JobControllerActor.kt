@@ -5,7 +5,7 @@ import io.dapr.actors.ActorType
 
 @ActorType(name = "JobController")
 interface JobControllerActor {
-  @ActorMethod(name = "initialize") fun initialize()
+   fun initialize()
 
-  @ActorMethod(name = "markProductCompleted") fun markProductCompleted()
+   fun markProductCompleted()
 }
