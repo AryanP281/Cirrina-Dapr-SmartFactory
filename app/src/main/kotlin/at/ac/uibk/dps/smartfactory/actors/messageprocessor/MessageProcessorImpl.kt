@@ -11,63 +11,76 @@ class MessageProcessorImpl(
   runtimeContext: ActorRuntimeContext<MessageProcessorImpl>,
   actorId: ActorId,
 ) : AbstractActor(runtimeContext, actorId), MessageProcessorActor {
-  private var currentActiveState: MessageProcessorActor.States = MessageProcessorActor.States.IDLE
-  private val processorType: MessageProcessorActor.ProcessorType =
+
+  enum class State {
+    IDLE,
+    PROCESS,
+    JOB_DONE,
+  }
+
+  enum class ProcessorType {
+    EMAIL,
+    SMS,
+    LOG,
+  }
+
+  private var currentActiveState: State = State.IDLE
+  private val processorType: ProcessorType =
     (System.getenv("MP_TYPE") ?: "0").let {
       when (it) {
-        "0" -> MessageProcessorActor.ProcessorType.EMAIL
-        "1" -> MessageProcessorActor.ProcessorType.SMS
-        else -> MessageProcessorActor.ProcessorType.LOG
+        "0" -> ProcessorType.EMAIL
+        "1" -> ProcessorType.SMS
+        else -> ProcessorType.LOG
       }
     }
 
   private val daprClient = DaprClientBuilder().build()
 
-  private fun transition(targetState: MessageProcessorActor.States, data: Any? = null) {
-    if (currentActiveState == MessageProcessorActor.States.JOB_DONE) return
+  private fun transition(targetState: State, data: Any? = null) {
+    if (currentActiveState == State.JOB_DONE) return
 
     when (targetState) {
-      MessageProcessorActor.States.IDLE -> {
-        currentActiveState = MessageProcessorActor.States.IDLE
+      State.IDLE -> {
+        currentActiveState = State.IDLE
       }
-      MessageProcessorActor.States.PROCESS -> {
-        if (currentActiveState == MessageProcessorActor.States.IDLE) {
-          currentActiveState = MessageProcessorActor.States.PROCESS
+      State.PROCESS -> {
+        if (currentActiveState == State.IDLE) {
+          currentActiveState = State.PROCESS
           processState(data as String)
         }
       }
-      MessageProcessorActor.States.JOB_DONE -> {
-        if (currentActiveState == MessageProcessorActor.States.IDLE)
-          currentActiveState = MessageProcessorActor.States.JOB_DONE
+      State.JOB_DONE -> {
+        if (currentActiveState == State.IDLE)
+          currentActiveState = State.JOB_DONE
       }
     }
   }
 
   override fun processMessage(message: String) {
-    if (currentActiveState == MessageProcessorActor.States.IDLE)
-      transition(MessageProcessorActor.States.PROCESS, message)
+    if (currentActiveState == State.IDLE)
+      transition(State.PROCESS, message)
   }
 
   override fun markJobDone() {
-    if (currentActiveState == MessageProcessorActor.States.IDLE)
-      transition(MessageProcessorActor.States.JOB_DONE)
+    if (currentActiveState == State.IDLE)
+      transition(State.JOB_DONE)
   }
 
   private fun processState(msg: String) {
     handleMessage(msg)
 
-    transition(MessageProcessorActor.States.IDLE)
+    transition(State.IDLE)
   }
 
   private fun handleMessage(msg: String) {
     when (processorType) {
-      MessageProcessorActor.ProcessorType.EMAIL -> {
+      ProcessorType.EMAIL -> {
         Services.processEmail(MessageProcessingRequest(msg)).subscribe()
       }
-      MessageProcessorActor.ProcessorType.SMS -> {
+      ProcessorType.SMS -> {
         Services.processSms(MessageProcessingRequest(msg)).subscribe()
       }
-      MessageProcessorActor.ProcessorType.LOG -> {
+      ProcessorType.LOG -> {
         val logs: MutableList<String> =
           daprClient.getState("statestore", "logs", MutableList::class.java).block()?.value
             as MutableList<String>? ?: mutableListOf<String>()

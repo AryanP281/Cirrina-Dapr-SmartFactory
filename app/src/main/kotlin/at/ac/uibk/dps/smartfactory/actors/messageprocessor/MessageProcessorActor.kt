@@ -5,17 +5,6 @@ import io.dapr.actors.ActorType
 
 @ActorType(name = "MessageProcessor")
 interface MessageProcessorActor {
-  enum class States {
-    IDLE,
-    PROCESS,
-    JOB_DONE,
-  }
-
-  enum class ProcessorType {
-    EMAIL,
-    SMS,
-    LOG,
-  }
 
   @ActorMethod(name = "processMessage") fun processMessage(message: String)
 
