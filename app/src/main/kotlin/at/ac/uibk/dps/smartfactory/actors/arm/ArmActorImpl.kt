@@ -22,7 +22,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   }
 
   private val partsPerProduct = 1000
-  private var currActiveState = State.IDLE
+  private var state = State.IDLE
   private var pickupSuccess = true
   private var errorMsg = ""
   private var partsAssembled = 0
@@ -32,7 +32,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
       State.IDLE -> {
-        if (currActiveState == State.RETURN) {
+        if (state == State.RETURN) {
           // Transition Actions
           if (partsAssembled >= partsPerProduct) {
             partsAssembled = 0
@@ -45,51 +45,51 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
               .subscribe()
           }
 
-          currActiveState = targetState
+          state = targetState
           idleState()
         }
       }
 
       State.PICKUP -> {
-        if (currActiveState == State.IDLE) {
-          currActiveState = targetState
+        if (state == State.IDLE) {
+          state = targetState
           pickupState()
         }
       }
 
       State.ASSEMBLE -> {
-        if (currActiveState == State.PICKUP || currActiveState == State.ERROR) {
+        if (state == State.PICKUP || state == State.ERROR) {
           // Transition actions
-          if (currActiveState == State.PICKUP) {
+          if (state == State.PICKUP) {
             // Raise ePickedUp
             Utils.publishEvent(daprClient, "pubsub", "ePickedUp", mutableMapOf<String, Any?>())
               .subscribe()
           }
 
-          currActiveState = targetState
+          state = targetState
           assembleState()
         }
       }
 
       State.ERROR -> {
         if (
-          currActiveState == State.PICKUP || currActiveState == State.ASSEMBLE
+          state == State.PICKUP || state == State.ASSEMBLE
         ) {
           // Transition actions
-          if (currActiveState == State.PICKUP) errorMsg = "Pickup failed..."
-          if (currActiveState == State.ASSEMBLE) errorMsg = "Assemble failed..."
+          if (state == State.PICKUP) errorMsg = "Pickup failed..."
+          if (state == State.ASSEMBLE) errorMsg = "Assemble failed..."
 
-          currActiveState = targetState
+          state = targetState
           errorState()
         }
       }
 
       State.RETURN -> {
         if (
-          currActiveState == State.ASSEMBLE || currActiveState == State.ERROR
+          state == State.ASSEMBLE || state == State.ERROR
         ) {
           // Transition Actions
-          if (currActiveState == State.ASSEMBLE) {
+          if (state == State.ASSEMBLE) {
             partsAssembled++
             Utils.publishEvent(
                 daprClient,
@@ -100,13 +100,13 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
               .subscribe()
           }
 
-          currActiveState = targetState
+          state = targetState
           returnState()
         }
       }
 
       State.JOB_DONE -> {
-        currActiveState = targetState
+        state = targetState
       }
     }
   }
@@ -133,7 +133,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   }
 
   override fun markJobDone() {
-    if (currActiveState == State.IDLE) transition(State.JOB_DONE)
+    if (state == State.IDLE) transition(State.JOB_DONE)
   }
 
   override fun markPickedUp() {
@@ -185,7 +185,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   }
 
   override fun retryTimeout(): Mono<Void> {
-    if (currActiveState == State.ERROR) {
+    if (state == State.ERROR) {
       if (pickupSuccess) transition(State.ASSEMBLE)
       else transition(State.RETURN)
     }
