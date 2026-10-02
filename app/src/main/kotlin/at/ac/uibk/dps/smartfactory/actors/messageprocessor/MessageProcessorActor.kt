@@ -6,7 +6,7 @@ import io.dapr.actors.ActorType
 @ActorType(name = "MessageProcessor")
 interface MessageProcessorActor {
 
-  @ActorMethod(name = "processMessage") fun processMessage(message: String)
+   fun processMessage(message: String)
 
-  @ActorMethod(name = "markJobDone") fun markJobDone()
+   fun markJobDone()
 }
