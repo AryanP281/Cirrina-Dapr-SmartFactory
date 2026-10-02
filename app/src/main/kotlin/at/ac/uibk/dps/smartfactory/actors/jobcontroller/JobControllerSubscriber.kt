@@ -36,7 +36,7 @@ class JobControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eProductComplete", pubsubName = "pubsub")
   @PostMapping("/eProductComplete")
-  fun eProductComplete(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleProductComplete(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
