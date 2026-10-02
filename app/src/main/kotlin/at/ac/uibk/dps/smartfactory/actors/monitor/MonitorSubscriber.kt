@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "monitor")
 class MonitorSubscriber {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
+  private val actorId = System.getenv("ACTOR_ID") ?: "monitor-0"
   private val proxy: MonitorActor =
     ActorProxyBuilder(MonitorActor::class.java, ActorClient()).build(ActorId(actorId))
 
