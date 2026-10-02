@@ -3,6 +3,7 @@ package ac.at.uibk.dps.dapr.smartfactory.actors.belt
 import io.dapr.actors.ActorType
 import reactor.core.publisher.Mono
 
+/** Belt actor interface. */
 @ActorType(name = "BeltActor")
 interface BeltActor {
 
