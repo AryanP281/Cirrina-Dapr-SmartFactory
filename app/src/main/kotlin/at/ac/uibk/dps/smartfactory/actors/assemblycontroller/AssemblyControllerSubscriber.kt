@@ -37,7 +37,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eBeamInterruptedStart", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedStart")
-  fun eBeamInterruptedStart(
+  fun handleBeamInterruptedStart(
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
     val delta = measureTime {
@@ -57,7 +57,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
   @PostMapping("/ePhotoCaptured")
-  fun ePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -77,7 +77,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
-  fun ePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -95,7 +95,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eObjectDiscarded", pubsubName = "pubsub")
   @PostMapping("/eObjectDiscarded")
-  fun eObjectDiscarded(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleObjectDiscarded(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -113,7 +113,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eBeamInterruptedEnd", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedEnd")
-  fun eBeamInterruptedEnd(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleBeamInterruptedEnd(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -131,7 +131,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun ePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -149,7 +149,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
