@@ -30,7 +30,7 @@ class MonitorSubscriber {
 
   @Topic(name = "eScanned", pubsubName = "pubsub")
   @PostMapping("/eScanned")
-  fun eScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -48,7 +48,7 @@ class MonitorSubscriber {
 
   @Topic(name = "eAssemblyComplete", pubsubName = "pubsub")
   @PostMapping("/eAssemblyComplete")
-  fun eAssemblyComplete(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleAssemblyComplete(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -66,7 +66,7 @@ class MonitorSubscriber {
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
