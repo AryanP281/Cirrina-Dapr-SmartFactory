@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-group = "at.ac.uibk.dps.smartfactory"
+group = " ac.at.uibk.dps.dapr.smartfactory"
 version = rootProject.version
 
 repositories {
