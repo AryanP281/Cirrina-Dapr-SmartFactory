@@ -15,14 +15,14 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     JOB_DONE,
   }
 
-  private var currentActiveState: State = State.MONITORING
+  private var state: State = State.MONITORING
   private var nScans = 0
   private var nAssemblies = 0
 
   private val daprClient = DaprClientBuilder().build()
 
   override fun markScanned() {
-    if (currentActiveState == State.MONITORING) {
+    if (state == State.MONITORING) {
       nScans += 1
 
       sendStatistics()
@@ -30,7 +30,7 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
   }
 
   override fun markAssembled() {
-    if (currentActiveState == State.MONITORING) {
+    if (state == State.MONITORING) {
       nAssemblies += 1
 
       sendStatistics()
@@ -38,8 +38,8 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
   }
 
   override fun markJobDone() {
-    if (currentActiveState == State.MONITORING) {
-      currentActiveState = State.JOB_DONE
+    if (state == State.MONITORING) {
+      state = State.JOB_DONE
 
       sendStatistics()
     }
