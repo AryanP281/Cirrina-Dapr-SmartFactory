@@ -12,69 +12,80 @@ class AssemblyControllerActorImpl(
   runtimeContext: ActorRuntimeContext<AssemblyControllerActorImpl>,
   id: ActorId,
 ) : AbstractActor(runtimeContext, id), AssemblyControllerActor {
+
+  enum class State {
+    DETECTING_START,
+    CAPTURE_PHOTO,
+    SCAN_PHOTO,
+    ERROR,
+    DETECTING_END,
+    UNLOADING,
+    JOB_DONE,
+  }
+
   private var waitingParts: Long = 0
 
-  private var currentActiveState: AssemblyControllerActor.States =
-    AssemblyControllerActor.States.DETECTING_START
+  private var currentActiveState: State =
+    State.DETECTING_START
 
   private val daprClient = DaprClientBuilder().build()
 
   // Measurement vars
   var firstDetection = true
 
-  private fun transition(targetState: AssemblyControllerActor.States, data: Any? = null) {
+  private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
-      AssemblyControllerActor.States.CAPTURE_PHOTO -> {
-        if (currentActiveState == AssemblyControllerActor.States.DETECTING_START) {
+      State.CAPTURE_PHOTO -> {
+        if (currentActiveState == State.DETECTING_START) {
           waitingParts -= 1
-          currentActiveState = AssemblyControllerActor.States.CAPTURE_PHOTO
+          currentActiveState = State.CAPTURE_PHOTO
           capturePhotoState()
         }
       }
 
-      AssemblyControllerActor.States.SCAN_PHOTO -> {
-        if (currentActiveState == AssemblyControllerActor.States.CAPTURE_PHOTO) {
-          currentActiveState = AssemblyControllerActor.States.SCAN_PHOTO
+      State.SCAN_PHOTO -> {
+        if (currentActiveState == State.CAPTURE_PHOTO) {
+          currentActiveState = State.SCAN_PHOTO
           scanPhotoState(data as ByteArray)
         }
       }
 
-      AssemblyControllerActor.States.DETECTING_END -> {
-        if (currentActiveState == AssemblyControllerActor.States.SCAN_PHOTO)
-          currentActiveState = AssemblyControllerActor.States.DETECTING_END
+      State.DETECTING_END -> {
+        if (currentActiveState == State.SCAN_PHOTO)
+          currentActiveState = State.DETECTING_END
       }
 
-      AssemblyControllerActor.States.ERROR -> {
-        if (currentActiveState == AssemblyControllerActor.States.SCAN_PHOTO) {
-          currentActiveState = AssemblyControllerActor.States.ERROR
+      State.ERROR -> {
+        if (currentActiveState == State.SCAN_PHOTO) {
+          currentActiveState = State.ERROR
           errorState()
         }
       }
 
-      AssemblyControllerActor.States.DETECTING_START -> {
+      State.DETECTING_START -> {
         if (
-          currentActiveState == AssemblyControllerActor.States.ERROR ||
-            currentActiveState == AssemblyControllerActor.States.UNLOADING
+          currentActiveState == State.ERROR ||
+            currentActiveState == State.UNLOADING
         ) {
-          currentActiveState = AssemblyControllerActor.States.DETECTING_START
+          currentActiveState = State.DETECTING_START
           detectingStartState()
         }
       }
 
-      AssemblyControllerActor.States.UNLOADING -> {
-        if (currentActiveState == AssemblyControllerActor.States.DETECTING_END)
-          currentActiveState = AssemblyControllerActor.States.UNLOADING
+      State.UNLOADING -> {
+        if (currentActiveState == State.DETECTING_END)
+          currentActiveState = State.UNLOADING
       }
 
-      AssemblyControllerActor.States.JOB_DONE -> {
-        currentActiveState = AssemblyControllerActor.States.JOB_DONE
+      State.JOB_DONE -> {
+        currentActiveState = State.JOB_DONE
       }
     }
   }
 
   private fun detectingStartState() {
     if (waitingParts > 0) {
-      transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
+      transition(State.CAPTURE_PHOTO)
     }
   }
 
@@ -115,11 +126,11 @@ class AssemblyControllerActorImpl(
       firstDetection = false
     }
 
-    transition(AssemblyControllerActor.States.CAPTURE_PHOTO)
+    transition(State.CAPTURE_PHOTO)
   }
 
   override fun processCapturedPhoto(photoData: ByteArray) {
-    transition(AssemblyControllerActor.States.SCAN_PHOTO, photoData)
+    transition(State.SCAN_PHOTO, photoData)
   }
 
   override fun processPhotoScan(scanStatus: Boolean) {
@@ -131,12 +142,12 @@ class AssemblyControllerActorImpl(
       Utils.publishEvent(daprClient, "pubsub", "eObjectValid", mutableMapOf<String, Any?>())
         .subscribe()
 
-      transition(AssemblyControllerActor.States.DETECTING_END)
-    } else transition(AssemblyControllerActor.States.ERROR)
+      transition(State.DETECTING_END)
+    } else transition(State.ERROR)
   }
 
   override fun objectDiscarded() {
-    transition(AssemblyControllerActor.States.DETECTING_START)
+    transition(State.DETECTING_START)
   }
 
   override fun detectedAtEnd() {
@@ -144,15 +155,15 @@ class AssemblyControllerActorImpl(
     Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf<String, Any?>())
       .subscribe()
 
-    transition(AssemblyControllerActor.States.UNLOADING)
+    transition(State.UNLOADING)
   }
 
   override fun processPickup() {
-    if (currentActiveState == AssemblyControllerActor.States.UNLOADING)
-      transition(AssemblyControllerActor.States.DETECTING_START)
+    if (currentActiveState == State.UNLOADING)
+      transition(State.DETECTING_START)
   }
 
   override fun markJobDone() {
-    transition(AssemblyControllerActor.States.JOB_DONE)
+    transition(State.JOB_DONE)
   }
 }
