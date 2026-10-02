@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RestController
 class JobControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: JobControllerActor =
+  private val proxy: JobControllerActor =
     ActorProxyBuilder(JobControllerActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
-    actorProxy.initialize()
+    proxy.initialize()
   }
 
   @Topic(name = "eProductComplete", pubsubName = "pubsub")
@@ -43,7 +43,7 @@ class JobControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markProductCompleted()
+      proxy.markProductCompleted()
     }
 
     // Logging event processing time

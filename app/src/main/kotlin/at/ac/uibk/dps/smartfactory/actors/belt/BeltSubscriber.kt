@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 class BeltSubscriber {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: BeltActor =
+  private val proxy: BeltActor =
     ActorProxyBuilder(BeltActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
@@ -37,7 +37,7 @@ class BeltSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markObjectValidity()
+      proxy.markObjectValidity()
     }
 
     // Logging event processing time
@@ -55,7 +55,7 @@ class BeltSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.startUnloading()
+      proxy.startUnloading()
     }
 
     // Logging event processing time
@@ -73,7 +73,7 @@ class BeltSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markPickedUp()
+      proxy.markPickedUp()
     }
 
     // Logging event processing time
@@ -91,7 +91,7 @@ class BeltSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markJobDone()
+      proxy.markJobDone()
     }
 
     // Logging event processing time

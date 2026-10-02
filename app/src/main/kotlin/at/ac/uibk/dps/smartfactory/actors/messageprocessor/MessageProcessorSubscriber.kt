@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 class MessageProcessorSubscriber {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: MessageProcessorActor =
+  private val proxy: MessageProcessorActor =
     ActorProxyBuilder(MessageProcessorActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
@@ -37,7 +37,7 @@ class MessageProcessorSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.processMessage(event.data["msg"] as? String ?: "")
+      proxy.processMessage(event.data["msg"] as? String ?: "")
     }
 
     // Logging event processing time
@@ -55,7 +55,7 @@ class MessageProcessorSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markJobDone()
+      proxy.markJobDone()
     }
 
     // Logging event processing time

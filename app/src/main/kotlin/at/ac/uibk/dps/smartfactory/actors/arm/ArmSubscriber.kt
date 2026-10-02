@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RestController
 class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: ArmActor =
+  private val proxy: ArmActor =
     ActorProxyBuilder(ArmActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
-    actorProxy.initialize()
+    proxy.initialize()
   }
 
   @Topic(name = "eArmPickup", pubsubName = "pubsub")
@@ -43,7 +43,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.initiatePickup()
+      proxy.initiatePickup()
     }
 
     // Logging event processing time
@@ -61,7 +61,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markPickedUp()
+      proxy.markPickedUp()
     }
 
     // Logging event processing time
@@ -79,7 +79,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.updatePickupStatus(event.data["success"]!! as Boolean)
+      proxy.updatePickupStatus(event.data["success"]!! as Boolean)
     }
 
     // Logging event processing time
@@ -99,7 +99,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.updateAssemblyStatus(event.data["success"]!! as Boolean)
+      proxy.updateAssemblyStatus(event.data["success"]!! as Boolean)
     }
 
     // Logging event processing time
@@ -117,7 +117,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.armReset()
+      proxy.armReset()
     }
 
     // Logging event processing time
@@ -135,7 +135,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markJobDone()
+      proxy.markJobDone()
     }
 
     // Logging event processing time

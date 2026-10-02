@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 class MonitorSubscriber {
 
   private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
-  private val actorProxy: MonitorActor =
+  private val proxy: MonitorActor =
     ActorProxyBuilder(MonitorActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
@@ -37,7 +37,7 @@ class MonitorSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markScanned()
+      proxy.markScanned()
     }
 
     // Logging event processing time
@@ -55,7 +55,7 @@ class MonitorSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markAssembled()
+      proxy.markAssembled()
     }
 
     // Logging event processing time
@@ -73,7 +73,7 @@ class MonitorSubscriber {
       val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      actorProxy.markJobDone()
+      proxy.markJobDone()
     }
 
     // Logging event processing time
