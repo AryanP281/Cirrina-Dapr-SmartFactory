@@ -46,13 +46,6 @@ class MonitorActorImpl(runtimeContext: ActorRuntimeContext<MonitorActorImpl>, id
     val productsCompleted =
       daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value ?: 0
 
-    println(
-      "JobDone: ${daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value}"
-    )
-    println(
-      "Completed: ${daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value}"
-    )
-
     // Invoke SendStatistics service
     Services.sendStatistics(StatisticsRequest(nScans, nAssemblies, productsCompleted, jobDone))
       .subscribe()
