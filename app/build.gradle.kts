@@ -49,6 +49,7 @@ dependencies {
 
   // Metrics
   implementation("io.dropwizard.metrics:metrics-core:4.2.38")
+  implementation("io.micrometer:micrometer-core:1.16.4")
 
   // Dagger
   implementation("com.google.dagger:dagger:2.59.2")
