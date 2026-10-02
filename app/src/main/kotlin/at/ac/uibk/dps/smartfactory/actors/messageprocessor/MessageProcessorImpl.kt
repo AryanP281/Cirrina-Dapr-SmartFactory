@@ -46,7 +46,7 @@ class MessageProcessorImpl(
       State.PROCESS -> {
         if (state == State.IDLE) {
           state = State.PROCESS
-          processState(data as String)
+          enterProcess(data as String)
         }
       }
       State.JOB_DONE -> {
@@ -66,7 +66,7 @@ class MessageProcessorImpl(
       transition(State.JOB_DONE)
   }
 
-  private fun processState(msg: String) {
+  private fun enterProcess(msg: String) {
     handleMessage(msg)
 
     transition(State.IDLE)
