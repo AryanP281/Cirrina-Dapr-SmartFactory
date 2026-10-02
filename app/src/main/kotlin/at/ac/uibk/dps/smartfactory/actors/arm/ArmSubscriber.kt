@@ -36,7 +36,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eArmPickup", pubsubName = "pubsub")
   @PostMapping("/eArmPickup")
-  fun eArmPickup(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleArmPickup(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -54,7 +54,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eMarkPickedUp", pubsubName = "pubsub")
   @PostMapping("/eMarkPickedUp")
-  fun eMarkPickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleMarkPickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -72,7 +72,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eUpdatePickupStatus", pubsubName = "pubsub")
   @PostMapping("/eUpdatePickupStatus")
-  fun eUpdatePickupStatus(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleUpdatePickupStatus(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -90,7 +90,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eCheckAssembleSuccess", pubsubName = "pubsub")
   @PostMapping("/eCheckAssembleSuccess")
-  fun eCheckAssembleSuccess(
+  fun handleCheckAssembleSuccess(
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
     val delta = measureTime {
@@ -110,7 +110,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eResetArm", pubsubName = "pubsub")
   @PostMapping("/eResetArm")
-  fun eResetArm(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleResetArm(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -128,7 +128,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
