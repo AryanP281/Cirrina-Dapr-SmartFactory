@@ -4,7 +4,7 @@ import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 import reactor.core.publisher.Mono
 
-@ActorType(name = "Belt")
+@ActorType(name = "BeltActor")
 interface BeltActor {
 
    fun markObjectValidity()
