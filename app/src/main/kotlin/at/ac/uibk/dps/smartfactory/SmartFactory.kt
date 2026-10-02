@@ -1,7 +1,7 @@
 package at.ac.uibk.dps.smartfactory
 
 import at.ac.uibk.dps.smartfactory.actors.arm.ArmActorImpl
-import at.ac.uibk.dps.smartfactory.actors.assemblycontroller.AssemblyControllerActorImpl
+import at.ac.uibk.dps.smartfactory.actors.assemblyController.AssemblyControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.belt.BeltActorImpl
 import at.ac.uibk.dps.smartfactory.actors.jobcontroller.JobControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.messageprocessor.MessageProcessorImpl

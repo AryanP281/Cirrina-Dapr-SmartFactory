@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
+package at.ac.uibk.dps.smartfactory.actors.assemblyController
 
 import at.ac.uibk.dps.smartfactory.metrics
 import at.ac.uibk.dps.smartfactory.utils.Utils
