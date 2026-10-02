@@ -37,7 +37,8 @@ fun main(args: Array<String>) {
   when (role) {
     "jobcontroller" -> ActorRuntime.getInstance().registerActor(JobControllerActorImpl::class.java)
     "monitor" -> ActorRuntime.getInstance().registerActor(MonitorActorImpl::class.java)
-    "messageprocessor" -> ActorRuntime.getInstance().registerActor(MessageProcessorActorImpl::class.java)
+    "messageprocessor" ->
+      ActorRuntime.getInstance().registerActor(MessageProcessorActorImpl::class.java)
     "belt" -> ActorRuntime.getInstance().registerActor(BeltActorImpl::class.java)
     "arm" -> ActorRuntime.getInstance().registerActor(ArmActorImpl::class.java)
     "assemblycontroller" ->
