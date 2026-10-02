@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.smartfactory.actors.jobcontroller
+package at.ac.uibk.dps.smartfactory.actors.jobController
 
 import at.ac.uibk.dps.smartfactory.metrics
 import at.ac.uibk.dps.smartfactory.utils.Utils
