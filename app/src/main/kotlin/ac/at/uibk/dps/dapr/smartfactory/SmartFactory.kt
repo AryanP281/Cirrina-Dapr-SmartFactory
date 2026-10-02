@@ -4,7 +4,7 @@ import ac.at.uibk.dps.dapr.smartfactory.actors.arm.ArmActorImpl
 import ac.at.uibk.dps.dapr.smartfactory.actors.assemblyController.AssemblyControllerActorImpl
 import ac.at.uibk.dps.dapr.smartfactory.actors.belt.BeltActorImpl
 import ac.at.uibk.dps.dapr.smartfactory.actors.jobController.JobControllerActorImpl
-import ac.at.uibk.dps.dapr.smartfactory.actors.messageProcessor.MessageProcessorImpl
+import ac.at.uibk.dps.dapr.smartfactory.actors.messageProcessor.MessageProcessorActorImpl
 import ac.at.uibk.dps.dapr.smartfactory.actors.monitor.MonitorActorImpl
 import com.codahale.metrics.CsvReporter
 import com.codahale.metrics.MetricRegistry
@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
   when (role) {
     "jobcontroller" -> ActorRuntime.getInstance().registerActor(JobControllerActorImpl::class.java)
     "monitor" -> ActorRuntime.getInstance().registerActor(MonitorActorImpl::class.java)
-    "messageprocessor" -> ActorRuntime.getInstance().registerActor(MessageProcessorImpl::class.java)
+    "messageprocessor" -> ActorRuntime.getInstance().registerActor(MessageProcessorActorImpl::class.java)
     "belt" -> ActorRuntime.getInstance().registerActor(BeltActorImpl::class.java)
     "arm" -> ActorRuntime.getInstance().registerActor(ArmActorImpl::class.java)
     "assemblycontroller" ->
