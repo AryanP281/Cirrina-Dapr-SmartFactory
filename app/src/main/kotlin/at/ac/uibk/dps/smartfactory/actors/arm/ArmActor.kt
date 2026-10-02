@@ -4,7 +4,7 @@ import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 import reactor.core.publisher.Mono
 
-@ActorType(name = "arm")
+@ActorType(name = "ArmActor")
 interface ArmActor {
 
   fun initialize()
