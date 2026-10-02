@@ -10,17 +10,24 @@ class JobControllerActorImpl(
   runtimeContext: ActorRuntimeContext<JobControllerActorImpl>,
   id: ActorId,
 ) : AbstractActor(runtimeContext, id), JobControllerActor {
+
+  enum class State {
+    STARTING,
+    RUNNING,
+    JOB_DONE,
+  }
+
   private val totalProducts = 1
-  private var currActiveState: JobControllerActor.States = JobControllerActor.States.STARTING
+  private var currActiveState: State = State.STARTING
 
   private val daprClient = DaprClientBuilder().build()
 
   override fun initialize() {
-    transition(JobControllerActor.States.STARTING)
+    transition(State.STARTING)
   }
 
   override fun markProductCompleted() {
-    if (currActiveState == JobControllerActor.States.RUNNING) {
+    if (currActiveState == State.RUNNING) {
       daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value.let {
         daprClient.saveState("statestore", "productsCompleted", (it ?: 0) + 1).block()
       }
@@ -31,25 +38,25 @@ class JobControllerActorImpl(
   private fun checkJobDone() {
     val productsCompleted =
       daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value ?: 0
-    if (productsCompleted >= totalProducts) transition(JobControllerActor.States.JOB_DONE)
+    if (productsCompleted >= totalProducts) transition(State.JOB_DONE)
   }
 
-  private fun transition(targetState: JobControllerActor.States) {
-    if (currActiveState == JobControllerActor.States.JOB_DONE) // Terminal state
+  private fun transition(targetState: State) {
+    if (currActiveState == State.JOB_DONE) // Terminal state
      return
 
     when (targetState) {
-      JobControllerActor.States.STARTING -> {
-        currActiveState = JobControllerActor.States.STARTING
+      State.STARTING -> {
+        currActiveState = State.STARTING
         startingState()
       }
-      JobControllerActor.States.RUNNING -> {
-        if (currActiveState == JobControllerActor.States.STARTING)
-          currActiveState = JobControllerActor.States.RUNNING
+      State.RUNNING -> {
+        if (currActiveState == State.STARTING)
+          currActiveState = State.RUNNING
       }
-      JobControllerActor.States.JOB_DONE -> {
-        if (currActiveState == JobControllerActor.States.RUNNING) {
-          currActiveState = JobControllerActor.States.JOB_DONE
+      State.JOB_DONE -> {
+        if (currActiveState == State.RUNNING) {
+          currActiveState = State.JOB_DONE
           jobDoneState()
         }
       }
@@ -67,7 +74,7 @@ class JobControllerActorImpl(
       .subscribe()
 
     // Transition to running state
-    transition(JobControllerActor.States.RUNNING)
+    transition(State.RUNNING)
   }
 
   private fun jobDoneState() {
