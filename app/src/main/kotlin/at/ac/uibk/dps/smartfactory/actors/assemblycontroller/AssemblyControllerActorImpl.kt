@@ -25,7 +25,7 @@ class AssemblyControllerActorImpl(
 
   private var waitingParts: Long = 0
 
-  private var currentActiveState: State =
+  private var state: State =
     State.DETECTING_START
 
   private val daprClient = DaprClientBuilder().build()
@@ -36,49 +36,49 @@ class AssemblyControllerActorImpl(
   private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
       State.CAPTURE_PHOTO -> {
-        if (currentActiveState == State.DETECTING_START) {
+        if (state == State.DETECTING_START) {
           waitingParts -= 1
-          currentActiveState = State.CAPTURE_PHOTO
+          state = State.CAPTURE_PHOTO
           capturePhotoState()
         }
       }
 
       State.SCAN_PHOTO -> {
-        if (currentActiveState == State.CAPTURE_PHOTO) {
-          currentActiveState = State.SCAN_PHOTO
+        if (state == State.CAPTURE_PHOTO) {
+          state = State.SCAN_PHOTO
           scanPhotoState(data as ByteArray)
         }
       }
 
       State.DETECTING_END -> {
-        if (currentActiveState == State.SCAN_PHOTO)
-          currentActiveState = State.DETECTING_END
+        if (state == State.SCAN_PHOTO)
+          state = State.DETECTING_END
       }
 
       State.ERROR -> {
-        if (currentActiveState == State.SCAN_PHOTO) {
-          currentActiveState = State.ERROR
+        if (state == State.SCAN_PHOTO) {
+          state = State.ERROR
           errorState()
         }
       }
 
       State.DETECTING_START -> {
         if (
-          currentActiveState == State.ERROR ||
-            currentActiveState == State.UNLOADING
+          state == State.ERROR ||
+            state == State.UNLOADING
         ) {
-          currentActiveState = State.DETECTING_START
+          state = State.DETECTING_START
           detectingStartState()
         }
       }
 
       State.UNLOADING -> {
-        if (currentActiveState == State.DETECTING_END)
-          currentActiveState = State.UNLOADING
+        if (state == State.DETECTING_END)
+          state = State.UNLOADING
       }
 
       State.JOB_DONE -> {
-        currentActiveState = State.JOB_DONE
+        state = State.JOB_DONE
       }
     }
   }
@@ -159,7 +159,7 @@ class AssemblyControllerActorImpl(
   }
 
   override fun processPickup() {
-    if (currentActiveState == State.UNLOADING)
+    if (state == State.UNLOADING)
       transition(State.DETECTING_START)
   }
 
