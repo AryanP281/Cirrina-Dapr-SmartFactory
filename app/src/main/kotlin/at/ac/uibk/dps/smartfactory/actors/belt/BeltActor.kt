@@ -7,13 +7,6 @@ import reactor.core.publisher.Mono
 @ActorType(name = "Belt")
 interface BeltActor {
 
-  enum class States {
-    LOADING,
-    TRANSPORTING,
-    UNLOADING,
-    JOB_DONE,
-  }
-
   @ActorMethod(name = "markObjectValidity") fun markObjectValidity()
 
   @ActorMethod(name = "startUnloading") fun startUnloading()
