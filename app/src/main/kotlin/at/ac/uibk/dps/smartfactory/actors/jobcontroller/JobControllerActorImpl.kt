@@ -18,7 +18,7 @@ class JobControllerActorImpl(
   }
 
   private val totalProducts = 1
-  private var currActiveState: State = State.STARTING
+  private var state: State = State.STARTING
 
   private val daprClient = DaprClientBuilder().build()
 
@@ -27,7 +27,7 @@ class JobControllerActorImpl(
   }
 
   override fun markProductCompleted() {
-    if (currActiveState == State.RUNNING) {
+    if (state == State.RUNNING) {
       daprClient.getState("statestore", "productsCompleted", Int::class.java).block()?.value.let {
         daprClient.saveState("statestore", "productsCompleted", (it ?: 0) + 1).block()
       }
@@ -42,21 +42,21 @@ class JobControllerActorImpl(
   }
 
   private fun transition(targetState: State) {
-    if (currActiveState == State.JOB_DONE) // Terminal state
+    if (state == State.JOB_DONE) // Terminal state
      return
 
     when (targetState) {
       State.STARTING -> {
-        currActiveState = State.STARTING
+        state = State.STARTING
         startingState()
       }
       State.RUNNING -> {
-        if (currActiveState == State.STARTING)
-          currActiveState = State.RUNNING
+        if (state == State.STARTING)
+          state = State.RUNNING
       }
       State.JOB_DONE -> {
-        if (currActiveState == State.RUNNING) {
-          currActiveState = State.JOB_DONE
+        if (state == State.RUNNING) {
+          state = State.JOB_DONE
           jobDoneState()
         }
       }
