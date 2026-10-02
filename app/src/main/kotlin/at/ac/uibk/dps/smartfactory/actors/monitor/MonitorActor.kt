@@ -3,7 +3,7 @@ package at.ac.uibk.dps.smartfactory.actors.monitor
 import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 
-@ActorType(name = "Monitor")
+@ActorType(name = "MonitorActor")
 interface MonitorActor {
 
    fun markScanned()
