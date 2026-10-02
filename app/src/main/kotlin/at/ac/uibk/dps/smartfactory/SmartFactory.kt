@@ -4,7 +4,7 @@ import at.ac.uibk.dps.smartfactory.actors.arm.ArmActorImpl
 import at.ac.uibk.dps.smartfactory.actors.assemblyController.AssemblyControllerActorImpl
 import at.ac.uibk.dps.smartfactory.actors.belt.BeltActorImpl
 import at.ac.uibk.dps.smartfactory.actors.jobController.JobControllerActorImpl
-import at.ac.uibk.dps.smartfactory.actors.messageprocessor.MessageProcessorImpl
+import at.ac.uibk.dps.smartfactory.actors.messageProcessor.MessageProcessorImpl
 import at.ac.uibk.dps.smartfactory.actors.monitor.MonitorActorImpl
 import com.codahale.metrics.CsvReporter
 import com.codahale.metrics.MetricRegistry

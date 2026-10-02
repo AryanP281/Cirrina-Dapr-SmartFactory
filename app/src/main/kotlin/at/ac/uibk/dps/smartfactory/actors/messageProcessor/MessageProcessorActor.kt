@@ -1,6 +1,5 @@
-package at.ac.uibk.dps.smartfactory.actors.messageprocessor
+package at.ac.uibk.dps.smartfactory.actors.messageProcessor
 
-import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 
 @ActorType(name = "MessageProcessorActor")

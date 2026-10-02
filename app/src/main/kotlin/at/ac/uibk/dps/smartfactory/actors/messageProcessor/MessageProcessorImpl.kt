@@ -1,4 +1,4 @@
-package at.ac.uibk.dps.smartfactory.actors.messageprocessor
+package at.ac.uibk.dps.smartfactory.actors.messageProcessor
 
 import at.ac.uibk.dps.smartfactory.api.MessageProcessingRequest
 import at.ac.uibk.dps.smartfactory.services.Services
