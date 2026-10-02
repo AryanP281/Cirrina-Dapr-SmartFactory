@@ -48,7 +48,7 @@ class JobControllerActorImpl(
     when (targetState) {
       State.STARTING -> {
         state = State.STARTING
-        startingState()
+        enterStarting()
       }
       State.RUNNING -> {
         if (state == State.STARTING)
@@ -57,13 +57,13 @@ class JobControllerActorImpl(
       State.JOB_DONE -> {
         if (state == State.RUNNING) {
           state = State.JOB_DONE
-          jobDoneState()
+          enterJobDone()
         }
       }
     }
   }
 
-  private fun startingState() {
+  private fun enterStarting() {
     // Emit event to Message Processor
     Utils.publishEvent(
         daprClient,
@@ -77,7 +77,7 @@ class JobControllerActorImpl(
     transition(State.RUNNING)
   }
 
-  private fun jobDoneState() {
+  private fun enterJobDone() {
     // Emit event to Message Processor
     Utils.publishEvent(
         daprClient,
