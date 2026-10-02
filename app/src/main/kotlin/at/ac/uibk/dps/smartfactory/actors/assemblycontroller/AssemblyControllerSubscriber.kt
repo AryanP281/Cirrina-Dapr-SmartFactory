@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "assemblycontroller")
 class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
+  private val actorId = System.getenv("ACTOR_ID") ?: "assemblycontroller-0"
   private val proxy: AssemblyControllerActor =
     ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
 

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "belt")
 class BeltSubscriber {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
+  private val actorId = System.getenv("ACTOR_ID") ?: "belt-0"
   private val proxy: BeltActor =
     ActorProxyBuilder(BeltActor::class.java, ActorClient()).build(ActorId(actorId))
 

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "arm")
 class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
+  private val actorId = System.getenv("ACTOR_ID") ?: "arm-0"
   private val proxy: ArmActor =
     ActorProxyBuilder(ArmActor::class.java, ActorClient()).build(ActorId(actorId))
 

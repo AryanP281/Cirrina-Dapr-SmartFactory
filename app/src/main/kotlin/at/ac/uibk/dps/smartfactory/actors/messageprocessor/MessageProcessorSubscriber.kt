@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "messageprocessor")
 class MessageProcessorSubscriber {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "actor-0"
+  private val actorId = System.getenv("ACTOR_ID") ?: "messageprocessor-0"
   private val proxy: MessageProcessorActor =
     ActorProxyBuilder(MessageProcessorActor::class.java, ActorClient()).build(ActorId(actorId))
 
