@@ -24,7 +24,7 @@ class MessageProcessorImpl(
     LOG,
   }
 
-  private var currentActiveState: State = State.IDLE
+  private var state: State = State.IDLE
   private val processorType: ProcessorType =
     (System.getenv("MP_TYPE") ?: "0").let {
       when (it) {
@@ -37,32 +37,32 @@ class MessageProcessorImpl(
   private val daprClient = DaprClientBuilder().build()
 
   private fun transition(targetState: State, data: Any? = null) {
-    if (currentActiveState == State.JOB_DONE) return
+    if (state == State.JOB_DONE) return
 
     when (targetState) {
       State.IDLE -> {
-        currentActiveState = State.IDLE
+        state = State.IDLE
       }
       State.PROCESS -> {
-        if (currentActiveState == State.IDLE) {
-          currentActiveState = State.PROCESS
+        if (state == State.IDLE) {
+          state = State.PROCESS
           processState(data as String)
         }
       }
       State.JOB_DONE -> {
-        if (currentActiveState == State.IDLE)
-          currentActiveState = State.JOB_DONE
+        if (state == State.IDLE)
+          state = State.JOB_DONE
       }
     }
   }
 
   override fun processMessage(message: String) {
-    if (currentActiveState == State.IDLE)
+    if (state == State.IDLE)
       transition(State.PROCESS, message)
   }
 
   override fun markJobDone() {
-    if (currentActiveState == State.IDLE)
+    if (state == State.IDLE)
       transition(State.JOB_DONE)
   }
 
