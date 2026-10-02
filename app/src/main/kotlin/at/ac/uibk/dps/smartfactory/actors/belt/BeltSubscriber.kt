@@ -30,7 +30,7 @@ class BeltSubscriber {
 
   @Topic(name = "eObjectValid", pubsubName = "pubsub")
   @PostMapping("/eObjectValid")
-  fun eObjectValid(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleObjectValid(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -48,7 +48,7 @@ class BeltSubscriber {
 
   @Topic(name = "eStartUnload", pubsubName = "pubsub")
   @PostMapping("/eStartUnload")
-  fun eStartUnload(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleStartUnload(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -66,7 +66,7 @@ class BeltSubscriber {
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun ePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -84,7 +84,7 @@ class BeltSubscriber {
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
