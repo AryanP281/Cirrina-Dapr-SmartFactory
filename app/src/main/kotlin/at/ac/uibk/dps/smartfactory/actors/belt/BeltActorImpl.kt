@@ -37,7 +37,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
       State.TRANSPORTING -> {
         if (state == State.LOADING) {
           state = State.TRANSPORTING
-          transportingState()
+          enterTransporting()
         }
       }
 
@@ -47,7 +47,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
           Services.stopBelt().subscribe()
 
           state = State.UNLOADING
-          unloadingState()
+          enterUnloading()
         }
       }
 
@@ -61,12 +61,12 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
     }
   }
 
-  private fun transportingState() {
+  private fun enterTransporting() {
     // Invoke MoveBelt Action
     Services.moveBelt().subscribe()
   }
 
-  private fun unloadingState() {
+  private fun enterUnloading() {
     // Starting timer for eArmPickup
     registerActorTimer(
         "armPickupTimeout-${id}",
