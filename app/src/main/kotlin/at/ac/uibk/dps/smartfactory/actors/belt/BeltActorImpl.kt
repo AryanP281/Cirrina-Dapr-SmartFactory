@@ -19,44 +19,44 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
     JOB_DONE,
   }
 
-  private var currentActiveState: State = State.LOADING
+  private var state: State = State.LOADING
 
   private val daprClient = DaprClientBuilder().build()
 
   private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
       State.LOADING -> {
-        if (currentActiveState == State.UNLOADING) {
+        if (state == State.UNLOADING) {
           // Exit actions
           unregisterTimer("armPickupTimeout-${id}").subscribe()
 
-          currentActiveState = targetState
+          state = targetState
         }
       }
 
       State.TRANSPORTING -> {
-        if (currentActiveState == State.LOADING) {
-          currentActiveState = State.TRANSPORTING
+        if (state == State.LOADING) {
+          state = State.TRANSPORTING
           transportingState()
         }
       }
 
       State.UNLOADING -> {
-        if (currentActiveState == State.TRANSPORTING) {
+        if (state == State.TRANSPORTING) {
           // Exit actions
           Services.stopBelt().subscribe()
 
-          currentActiveState = State.UNLOADING
+          state = State.UNLOADING
           unloadingState()
         }
       }
 
       State.JOB_DONE -> {
         // Exit actions
-        if (currentActiveState == State.UNLOADING)
+        if (state == State.UNLOADING)
           unregisterTimer("armPickupTimeout-${id}").subscribe()
 
-        currentActiveState = State.JOB_DONE
+        state = State.JOB_DONE
       }
     }
   }
@@ -95,7 +95,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   }
 
   override fun armPickupTimeout(): Mono<Void> {
-    if (currentActiveState == State.UNLOADING) {
+    if (state == State.UNLOADING) {
       // Raising eArmPickup
       Utils.publishEvent(daprClient, "pubsub", "eArmPickup", mutableMapOf<String, Any?>())
         .subscribe()
