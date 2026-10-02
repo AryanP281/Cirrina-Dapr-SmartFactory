@@ -6,9 +6,9 @@ import io.dapr.actors.ActorType
 @ActorType(name = "Monitor")
 interface MonitorActor {
 
-  @ActorMethod(name = "markScanned") fun markScanned()
+   fun markScanned()
 
-  @ActorMethod(name = "markAssembled") fun markAssembled()
+   fun markAssembled()
 
-  @ActorMethod(name = "markJobDone") fun markJobDone()
+   fun markJobDone()
 }
