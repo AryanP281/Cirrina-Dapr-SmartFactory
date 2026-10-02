@@ -3,7 +3,7 @@ package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
 import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 
-@ActorType(name = "assemblyController")
+@ActorType(name = "AssemblyControllerActor")
 interface AssemblyControllerActor {
 
   fun initialize()
