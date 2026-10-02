@@ -30,7 +30,7 @@ class MessageProcessorSubscriber {
 
   @Topic(name = "eProcessMessage", pubsubName = "pubsub")
   @PostMapping("/eProcessMessage")
-  fun eProcessMessage(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleProcessMessage(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
@@ -48,7 +48,7 @@ class MessageProcessorSubscriber {
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun eJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
