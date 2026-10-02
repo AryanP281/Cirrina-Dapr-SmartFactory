@@ -6,19 +6,19 @@ import io.dapr.actors.ActorType
 @ActorType(name = "assemblyController")
 interface AssemblyControllerActor {
 
-  @ActorMethod(name = "initialize") fun initialize()
+  fun initialize()
 
-  @ActorMethod(name = "detectedAtStart") fun detectedAtStart()
+  fun detectedAtStart()
 
-  @ActorMethod(name = "processCapturedPhoto") fun processCapturedPhoto(photoData: ByteArray)
+   fun processCapturedPhoto(photoData: ByteArray)
 
-  @ActorMethod(name = "processPhotoScan") fun processPhotoScan(scanStatus: Boolean)
+   fun processPhotoScan(scanStatus: Boolean)
 
-  @ActorMethod(name = "objectDiscarded") fun objectDiscarded()
+   fun objectDiscarded()
 
-  @ActorMethod(name = "detectedAtEnd") fun detectedAtEnd()
+   fun detectedAtEnd()
 
-  @ActorMethod(name = "processPickup") fun processPickup()
+   fun processPickup()
 
-  @ActorMethod(name = "markJobDone") fun markJobDone()
+   fun markJobDone()
 }
