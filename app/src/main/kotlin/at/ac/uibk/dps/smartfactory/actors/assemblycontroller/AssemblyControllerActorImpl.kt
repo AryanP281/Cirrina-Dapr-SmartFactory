@@ -39,14 +39,14 @@ class AssemblyControllerActorImpl(
         if (state == State.DETECTING_START) {
           waitingParts -= 1
           state = State.CAPTURE_PHOTO
-          capturePhotoState()
+          enterCapturePhoto()
         }
       }
 
       State.SCAN_PHOTO -> {
         if (state == State.CAPTURE_PHOTO) {
           state = State.SCAN_PHOTO
-          scanPhotoState(data as ByteArray)
+          enterScanPhoto(data as ByteArray)
         }
       }
 
@@ -58,7 +58,7 @@ class AssemblyControllerActorImpl(
       State.ERROR -> {
         if (state == State.SCAN_PHOTO) {
           state = State.ERROR
-          errorState()
+          enterError()
         }
       }
 
@@ -68,7 +68,7 @@ class AssemblyControllerActorImpl(
             state == State.UNLOADING
         ) {
           state = State.DETECTING_START
-          detectingStartState()
+          enterDetectingStart()
         }
       }
 
@@ -83,23 +83,23 @@ class AssemblyControllerActorImpl(
     }
   }
 
-  private fun detectingStartState() {
+  private fun enterDetectingStart() {
     if (waitingParts > 0) {
       transition(State.CAPTURE_PHOTO)
     }
   }
 
-  private fun capturePhotoState() {
+  private fun enterCapturePhoto() {
     // Invoking photo capture service
     Services.takePhoto().subscribe()
   }
 
-  private fun scanPhotoState(photoData: ByteArray) {
+  private fun enterScanPhoto(photoData: ByteArray) {
     // Invoking photo scan service
     Services.scanPhoto(PhotoScanRequest(photoData)).subscribe()
   }
 
-  private fun errorState() {
+  private fun enterError() {
     // Raise eProcessMessage
     Utils.publishEvent(
         daprClient,
@@ -113,7 +113,7 @@ class AssemblyControllerActorImpl(
   }
 
   override fun initialize() {
-    detectingStartState()
+    enterDetectingStart()
   }
 
   override fun detectedAtStart() {
