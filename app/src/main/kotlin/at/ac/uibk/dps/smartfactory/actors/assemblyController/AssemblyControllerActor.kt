@@ -1,6 +1,5 @@
-package at.ac.uibk.dps.smartfactory.actors.assemblycontroller
+package at.ac.uibk.dps.smartfactory.actors.assemblyController
 
-import io.dapr.actors.ActorMethod
 import io.dapr.actors.ActorType
 
 @ActorType(name = "AssemblyControllerActor")
