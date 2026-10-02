@@ -7,19 +7,19 @@ import reactor.core.publisher.Mono
 @ActorType(name = "arm")
 interface ArmActor {
 
-  @ActorMethod(name = "initialize") fun initialize()
+  fun initialize()
 
-  @ActorMethod(name = "initiatePickup") fun initiatePickup()
+  fun initiatePickup()
 
-  @ActorMethod(name = "updatePickupStatus") fun updatePickupStatus(pickupStatus: Boolean)
+  fun updatePickupStatus(pickupStatus: Boolean)
 
-  @ActorMethod(name = "updateAssemblyStatus") fun updateAssemblyStatus(assemblyStatus: Boolean)
+  fun updateAssemblyStatus(assemblyStatus: Boolean)
 
-  @ActorMethod(name = "markJobDone") fun markJobDone()
+  fun markJobDone()
 
-  @ActorMethod(name = "retryTimeout") fun retryTimeout(): Mono<Void>
+  fun retryTimeout(): Mono<Void>
 
-  @ActorMethod(name = "markPickedUp") fun markPickedUp()
+  fun markPickedUp()
 
-  @ActorMethod(name = "armReset") fun armReset()
+  fun armReset()
 }
