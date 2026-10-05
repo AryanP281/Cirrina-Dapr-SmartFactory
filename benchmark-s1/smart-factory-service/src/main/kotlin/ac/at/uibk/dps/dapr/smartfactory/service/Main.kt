@@ -1,4 +1,4 @@
-package org.example
+package org.example.ac.at.uibk.dps.dapr.smartfactory.service
 
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
