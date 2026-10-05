@@ -1,14 +1,6 @@
-plugins {
-  application
-  id("org.springframework.boot") version "3.5.0"
-  id("io.spring.dependency-management") version "1.1.7"
-  id("com.ncorti.ktfmt.gradle")
-  kotlin("kapt")
-  kotlin("jvm")
-  kotlin("plugin.spring") version "2.1.0"
-}
+plugins { id("common-conventions") }
 
-group = "ac.at.uibk.dps.smartfactory"
+group = "ac.at.uibk.dps.dapr.smartfactory"
 
 version =
   providers
@@ -18,45 +10,20 @@ version =
     .trim()
 
 application {
-  mainClass.set(" ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt")
+  mainClass.set("ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt")
   applicationName = "smartfactory"
 }
-
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-
-ktfmt { googleStyle() }
 
 dependencies {
   implementation(project(":buildinfo"))
   implementation(project(":lib"))
 
-  implementation(kotlin("stdlib-jdk8"))
-
   // Fory
   implementation("org.apache.fory:fory-core:0.15.0")
   implementation("org.apache.fory:fory-kotlin:0.15.0")
 
-  // Dapr
-  implementation("io.dapr:dapr-sdk:1.18.0")
-  implementation("io.dapr:dapr-sdk-actors:1.18.0")
-  implementation("io.dapr:dapr-sdk-springboot:1.18.0")
-
-  // Spring Web
-  implementation("org.springframework.boot:spring-boot-starter-web")
-
   // Logging
   implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
-
-  // Metrics
-  implementation("io.dropwizard.metrics:metrics-core:4.2.38")
-  implementation("io.micrometer:micrometer-core:1.16.4")
-
-  // Dagger
-  implementation("com.google.dagger:dagger:2.59.2")
-  kapt("com.google.dagger:dagger-compiler:2.59.2")
-
-  // Guava
-  implementation("com.google.guava:guava:33.6.0-jre")
 
   // JUnit
   testImplementation(platform("org.junit:junit-bom:5.11.0"))
@@ -67,12 +34,7 @@ dependencies {
   implementation(project(":api"))
 }
 
-repositories {
-  mavenCentral()
-  gradlePluginPortal()
-}
-
-springBoot { mainClass.set(" ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt") }
+springBoot { mainClass.set("ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt") }
 
 tasks.bootJar { archiveFileName.set("app.jar") }
 
