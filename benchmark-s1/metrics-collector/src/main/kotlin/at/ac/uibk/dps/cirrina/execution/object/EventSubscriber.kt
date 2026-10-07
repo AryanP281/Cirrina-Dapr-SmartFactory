@@ -1,4 +1,4 @@
-package org.example
+package at.ac.uibk.dps.cirrina.execution.`object`
 
 import io.dapr.Topic
 import io.dapr.client.DaprClientBuilder

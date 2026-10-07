@@ -1,4 +1,4 @@
-package org.example
+package at.ac.uibk.dps.cirrina.execution.`object`
 
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
