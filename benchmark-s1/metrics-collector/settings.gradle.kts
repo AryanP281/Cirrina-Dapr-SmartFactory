@@ -13,5 +13,4 @@ pluginManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
-
-include("smartFactory", "api", ":benchmark-s1:smart-factory-service")
+rootProject.name = "SmartFactoryMetricsCollector"
