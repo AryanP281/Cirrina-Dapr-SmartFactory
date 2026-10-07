@@ -1,4 +1,5 @@
-plugins { id("common-conventions")
+plugins {
+  id("common-conventions")
   id("com.gradleup.shadow") version "9.0.0"
 }
 
@@ -18,9 +19,7 @@ application { mainClass.set("ac.at.uibk.dps.dapr.smartfactory.service.FactorySer
 tasks.shadowJar {
   archiveFileName.set("backend.jar")
 
-  manifest {
-    attributes["Main-Class"] = application.mainClass.get()
-  }
+  manifest { attributes["Main-Class"] = application.mainClass.get() }
 
   mergeServiceFiles()
 }

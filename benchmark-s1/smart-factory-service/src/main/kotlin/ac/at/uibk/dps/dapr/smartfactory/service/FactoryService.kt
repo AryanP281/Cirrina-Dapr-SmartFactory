@@ -38,17 +38,15 @@ val executorService: ScheduledExecutorService = Executors.newScheduledThreadPool
 
 val logger = LoggerFactory.getLogger("ac.at.uibk.dps.dapr.smartfactory.service.FactoryServiceKt")
 
-val SERVICE_ROLE =
+val serviceRole =
   System.getenv("SERVICE_ROLE")
-    ?: "" // The state-machine role that this process provides services for: "monitor", "mp",
-
-// "belt", "arm", "ac"
+    ?: "" // The state-machine role that this process provides services for
 
 fun main() {
   try {
     val httpServer = HttpServer.create(InetSocketAddress(6000), 0)
 
-    when (SERVICE_ROLE) {
+    when (serviceRole) {
       "monitor" -> registerMonitorEndpoints(httpServer)
 
       "mp" -> registerMessageProcessorEndpoints(httpServer)
@@ -59,7 +57,7 @@ fun main() {
 
       "ac" -> registerAssemblyControllerEndpoints(httpServer)
 
-      else -> throw IllegalArgumentException("Unknown SERVICE_ROLE: $SERVICE_ROLE")
+      else -> throw IllegalArgumentException("Unknown SERVICE_ROLE: $serviceRole")
     }
 
     httpServer.start()
