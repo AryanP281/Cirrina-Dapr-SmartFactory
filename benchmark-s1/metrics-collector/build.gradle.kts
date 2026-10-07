@@ -6,11 +6,10 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("jvm") version "2.3.10"
     id("application")
-    id("com.gradleup.shadow") version "9.0.0"
     kotlin("plugin.spring") version "2.3.10"
 }
 
-group = "org.example"
+group = "at.ac.uibk.dps.cirrina.execution.object"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -35,7 +34,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("org.example.MainKt")
+    mainClass.set("at.ac.uibk.dps.cirrina.execution.object.MetricsCollectorKt")
 }
 
 tasks.test {
@@ -43,17 +42,7 @@ tasks.test {
 }
 
 springBoot {
-    mainClass.set("org.example.MainKt")
+    mainClass.set("at.ac.uibk.dps.cirrina.execution.object.MetricsCollectorKt")
 }
 
 tasks.bootJar { archiveFileName.set("DaprMetricsCollector.jar") }
-
-tasks.shadowJar {
-    archiveFileName.set("DaprMetricsCollector.jar")
-
-    manifest {
-        attributes["Main-Class"] = application.mainClass.get()
-    }
-
-    mergeServiceFiles()
-}
