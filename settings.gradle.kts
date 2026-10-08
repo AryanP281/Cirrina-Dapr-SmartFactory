@@ -14,4 +14,4 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include("smartFactory", "api", ":benchmark-s1:smart-factory-service")
+include("smartFactory", "api", ":benchmark-s1:smart-factory-service", ":benchmark-s1:metrics-collector")
