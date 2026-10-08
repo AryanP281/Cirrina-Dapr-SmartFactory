@@ -8,6 +8,7 @@ on:
 
 jobs:
   Build:
+    if: github.repository == 'CollaborativeStateMachines/Cirrina-Dapr-SmartFactory'
     runs-on: ubuntu-latest
     permissions:
       contents: read
