@@ -33,7 +33,7 @@ dependencies {
 
 springBoot { mainClass.set("ac.at.uibk.dps.dapr.smartfactory.SmartFactoryKt") }
 
-tasks.bootJar { archiveFileName.set("app.jar") }
+tasks.bootJar { archiveFileName.set("SmartFactoryApp.jar") }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
   compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25) }
