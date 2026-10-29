@@ -1,17 +1,10 @@
 package ac.at.uibk.dps.dapr.smartfactory.actors.belt
 
-import ac.at.uibk.dps.dapr.smartfactory.metrics
-import ac.at.uibk.dps.dapr.smartfactory.utils.Utils
-import com.codahale.metrics.Timer
 import io.dapr.Topic
 import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
-import kotlin.time.measureTime
-import kotlin.time.toJavaDuration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,34 +15,14 @@ import org.springframework.web.bind.annotation.RestController
 @ConditionalOnProperty("role", havingValue = "belt")
 class BeltSubscriber {
 
-  private val actorId = System.getenv("ACTOR_ID") ?: "belt-0"
+  private val actorId =
+    System.getenv("ACTOR_ID") ?: "belt-0"
 
   private val proxy: BeltActor =
-    ActorProxyBuilder(BeltActor::class.java, ActorClient()).build(ActorId(actorId))
-
-  private val eventTimer: Timer = metrics.timer("event.latency")
-  private val processEventTimer: Timer = metrics.timer("processEvent.time")
-  private val eventHandlingTimer: Timer = metrics.timer("event.handling")
-
-  private val perEventTimers =
-    ConcurrentHashMap<String, ArrayList<Timer>>().apply {
-      val inputEvents =
-        arrayOf(
-          "eObjectValid",
-          "eStartUnload",
-          "ePickedUp",
-          "eJobDone",
-        )
-
-      for (inputEvent in inputEvents) {
-        this[inputEvent] =
-          arrayListOf(
-            metrics.timer("$inputEvent.event.latency"),
-            metrics.timer("$inputEvent.processEvent.time"),
-            metrics.timer("$inputEvent.event.handling"),
-          )
-      }
-    }
+    ActorProxyBuilder(
+      BeltActor::class.java,
+      ActorClient()
+    ).build(ActorId(actorId))
 
   @Topic(name = "eObjectValid", pubsubName = "pubsub")
   @PostMapping("/eObjectValid")
@@ -57,38 +30,7 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    val delta = measureTime {
-      // Logging event latency
-      val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      perEventTimers["eObjectValid"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      proxy.markObjectValidity()
-    }
-
-    // Logging handling time
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    perEventTimers["eObjectValid"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
-
-    perEventTimers["eObjectValid"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    // Logging event processing time
-    processEventTimer.update(delta.toJavaDuration())
+    proxy.markObjectValidity()
 
     return ResponseEntity.ok().build()
   }
@@ -99,38 +41,9 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    val delta = measureTime {
-      // Logging event latency
-      val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      perEventTimers["eStartUnload"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      proxy.startUnloading((event.data["partId"] as Number).toLong())
-    }
-
-    // Logging handling time
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    perEventTimers["eStartUnload"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
-
-    perEventTimers["eStartUnload"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    // Logging event processing time
-    processEventTimer.update(delta.toJavaDuration())
+    proxy.startUnloading(
+      (event.data["partId"] as Number).toLong()
+    )
 
     return ResponseEntity.ok().build()
   }
@@ -141,38 +54,7 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    val delta = measureTime {
-      // Logging event latency
-      val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      perEventTimers["ePickedUp"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      proxy.markPickedUp()
-    }
-
-    // Logging handling time
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    perEventTimers["ePickedUp"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
-
-    perEventTimers["ePickedUp"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    // Logging event processing time
-    processEventTimer.update(delta.toJavaDuration())
+    proxy.markPickedUp()
 
     return ResponseEntity.ok().build()
   }
@@ -183,38 +65,7 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    val delta = measureTime {
-      // Logging event latency
-      val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      perEventTimers["eJobDone"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      proxy.markJobDone()
-    }
-
-    // Logging handling time
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    perEventTimers["eJobDone"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
-
-    perEventTimers["eJobDone"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    // Logging event processing time
-    processEventTimer.update(delta.toJavaDuration())
+    proxy.markJobDone()
 
     return ResponseEntity.ok().build()
   }
