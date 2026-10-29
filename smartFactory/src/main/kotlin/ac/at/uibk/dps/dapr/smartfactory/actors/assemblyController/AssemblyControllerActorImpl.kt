@@ -23,20 +23,18 @@ class AssemblyControllerActorImpl(
     JOB_DONE,
   }
 
-  private var waitingParts: Long = 0
+  private var nextReceivedPartId = 0L
+  private var nextPartToProcessId = 0L
 
   private var state: State = State.DETECTING_START
 
   private val daprClient = DaprClientBuilder().build()
 
-  // Measurement vars
-  var firstDetection = true
-
   private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
       State.CAPTURE_PHOTO -> {
         if (state == State.DETECTING_START) {
-          waitingParts -= 1
+          Utils.publishEvent(daprClient, "pubsub", "ePartAssemblyInitiated", mutableMapOf("partId" to nextPartToProcessId)).subscribe()
           state = State.CAPTURE_PHOTO
           enterCapturePhoto()
         }
@@ -62,6 +60,7 @@ class AssemblyControllerActorImpl(
 
       State.DETECTING_START -> {
         if (state == State.ERROR || state == State.UNLOADING) {
+          nextPartToProcessId += 1
           state = State.DETECTING_START
           enterDetectingStart()
         }
@@ -78,7 +77,7 @@ class AssemblyControllerActorImpl(
   }
 
   private fun enterDetectingStart() {
-    if (waitingParts > 0) {
+    if ((nextReceivedPartId - nextPartToProcessId) > 0) {
       transition(State.CAPTURE_PHOTO)
     }
   }
@@ -111,14 +110,7 @@ class AssemblyControllerActorImpl(
   }
 
   override fun detectedAtStart() {
-    waitingParts = if (waitingParts == Long.MAX_VALUE) Long.MAX_VALUE else waitingParts + 1
-
-    // Checking if first detection
-    if (firstDetection) {
-      // Emitting event to begin production time measurement
-      Utils.publishEvent(daprClient, "pubsub", "eProductionStarted", mutableMapOf()).subscribe()
-      firstDetection = false
-    }
+    nextReceivedPartId += 1
 
     transition(State.CAPTURE_PHOTO)
   }
@@ -146,7 +138,7 @@ class AssemblyControllerActorImpl(
 
   override fun detectedAtEnd() {
     // Raising eStartUnload
-    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf<String, Any?>())
+    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf("partId" to nextPartToProcessId))
       .subscribe()
 
     transition(State.UNLOADING)
