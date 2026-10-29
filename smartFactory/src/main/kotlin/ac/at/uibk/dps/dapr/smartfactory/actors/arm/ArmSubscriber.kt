@@ -30,6 +30,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
+  private val eventHandlingTimer: Timer = metrics.timer("event.handling")
   private val perEventTimers = ConcurrentHashMap<String, ArrayList<Timer>>()
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
@@ -62,6 +63,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
     //Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
     val deltaTime: Long = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
     perEventTimers["eArmPickup"]
       ?.get(1)
       ?.update(delta.toJavaDuration())
@@ -100,6 +102,8 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
     val eventEmitTime = event.data["emittedTime"]!! as Long
     val deltaTime =
       (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+
+    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
     perEventTimers["eUpdatePickupStatus"]
       ?.get(1)
@@ -141,6 +145,8 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
     val deltaTime =
       (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
+    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     perEventTimers["eCheckAssembleSuccess"]
       ?.get(1)
       ?.update(delta.toJavaDuration())
@@ -181,6 +187,8 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
     val deltaTime =
       (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
+    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
+
     perEventTimers["eResetArm"]
       ?.get(1)
       ?.update(delta.toJavaDuration())
@@ -220,6 +228,8 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
     val eventEmitTime = event.data["emittedTime"]!! as Long
     val deltaTime =
       (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+
+    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
     perEventTimers["eJobDone"]
       ?.get(1)
