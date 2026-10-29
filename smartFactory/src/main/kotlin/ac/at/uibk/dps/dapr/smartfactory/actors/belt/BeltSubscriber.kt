@@ -111,7 +111,7 @@ class BeltSubscriber {
         ?.get(0)
         ?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.startUnloading()
+      proxy.startUnloading((event.data["partId"] as Number).toLong())
     }
 
     // Logging handling time

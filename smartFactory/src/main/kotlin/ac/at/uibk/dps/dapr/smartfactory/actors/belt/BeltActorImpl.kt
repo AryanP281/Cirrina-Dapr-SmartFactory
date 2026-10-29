@@ -19,6 +19,8 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
     JOB_DONE,
   }
 
+  private var currentPartId = 0L
+
   private var state: State = State.LOADING
 
   private val daprClient = DaprClientBuilder().build()
@@ -43,6 +45,8 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
 
       State.UNLOADING -> {
         if (state == State.TRANSPORTING) {
+          currentPartId = data as Long
+
           // Exit actions
           Services.stopBelt().subscribe()
 
@@ -81,8 +85,8 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
     transition(State.TRANSPORTING)
   }
 
-  override fun startUnloading() {
-    transition(State.UNLOADING)
+  override fun startUnloading(partId: Long) {
+    transition(State.UNLOADING, partId)
   }
 
   override fun markJobDone() {
@@ -96,7 +100,7 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   override fun armPickupTimeout(): Mono<Void> {
     if (state == State.UNLOADING) {
       // Raising eArmPickup
-      Utils.publishEvent(daprClient, "pubsub", "eArmPickup", mutableMapOf<String, Any?>())
+      Utils.publishEvent(daprClient, "pubsub", "eArmPickup", mutableMapOf<String, Any?>("partId" to currentPartId))
         .subscribe()
     }
 
