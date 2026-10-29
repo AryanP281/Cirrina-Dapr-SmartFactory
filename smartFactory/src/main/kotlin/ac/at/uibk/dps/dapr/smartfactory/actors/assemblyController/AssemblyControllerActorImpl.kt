@@ -34,7 +34,13 @@ class AssemblyControllerActorImpl(
     when (targetState) {
       State.CAPTURE_PHOTO -> {
         if (state == State.DETECTING_START) {
-          Utils.publishEvent(daprClient, "pubsub", "ePartAssemblyInitiated", mutableMapOf("partId" to nextPartToProcessId)).subscribe()
+          Utils.publishEvent(
+              daprClient,
+              "pubsub",
+              "ePartAssemblyInitiated",
+              mutableMapOf("partId" to nextPartToProcessId),
+            )
+            .subscribe()
           state = State.CAPTURE_PHOTO
           enterCapturePhoto()
         }
@@ -138,7 +144,12 @@ class AssemblyControllerActorImpl(
 
   override fun detectedAtEnd() {
     // Raising eStartUnload
-    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf("partId" to nextPartToProcessId))
+    Utils.publishEvent(
+        daprClient,
+        "pubsub",
+        "eStartUnload",
+        mutableMapOf("partId" to nextPartToProcessId),
+      )
       .subscribe()
 
     transition(State.UNLOADING)

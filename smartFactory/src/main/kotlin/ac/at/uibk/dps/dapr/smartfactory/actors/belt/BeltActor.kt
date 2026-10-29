@@ -9,7 +9,7 @@ interface BeltActor {
 
   fun markObjectValidity()
 
-  fun startUnloading(partId : Long)
+  fun startUnloading(partId: Long)
 
   fun markJobDone()
 

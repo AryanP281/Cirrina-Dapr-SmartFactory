@@ -9,7 +9,7 @@ interface ArmActor {
 
   fun initialize()
 
-  fun initiatePickup(partId : Long)
+  fun initiatePickup(partId: Long)
 
   fun updatePickupStatus(pickupStatus: Boolean)
 

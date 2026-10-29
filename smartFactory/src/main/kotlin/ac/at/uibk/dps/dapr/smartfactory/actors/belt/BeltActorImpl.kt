@@ -100,7 +100,12 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   override fun armPickupTimeout(): Mono<Void> {
     if (state == State.UNLOADING) {
       // Raising eArmPickup
-      Utils.publishEvent(daprClient, "pubsub", "eArmPickup", mutableMapOf<String, Any?>("partId" to currentPartId))
+      Utils.publishEvent(
+          daprClient,
+          "pubsub",
+          "eArmPickup",
+          mutableMapOf<String, Any?>("partId" to currentPartId),
+        )
         .subscribe()
     }
 

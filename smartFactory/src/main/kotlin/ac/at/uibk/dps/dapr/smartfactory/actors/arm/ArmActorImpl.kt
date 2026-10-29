@@ -53,8 +53,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
 
       State.PICKUP -> {
         if (state == State.IDLE) {
-          if(pickupSuccess)
-              currentPartId = data as Long
+          if (pickupSuccess) currentPartId = data as Long
 
           state = targetState
           enterPickup()
@@ -115,7 +114,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
     enterIdle()
   }
 
-  override fun initiatePickup(partId : Long) {
+  override fun initiatePickup(partId: Long) {
     val isJobDone =
       daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value ?: false
 
