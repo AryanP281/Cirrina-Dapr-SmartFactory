@@ -20,11 +20,9 @@ class EventSubscriber {
 
   val partAssemblyStartTimes = ConcurrentHashMap<Long, Long>()
 
-  private val metricsDir =
-    Path.of("./metrics")
+  private val metricsDir = Path.of("./metrics")
 
-  private val assemblyTimesFile =
-    metricsDir.resolve("partAssemblyTimes.csv")
+  private val assemblyTimesFile = metricsDir.resolve("partAssemblyTimes.csv")
 
   private val csvLock = Any()
 
@@ -36,7 +34,7 @@ class EventSubscriber {
         assemblyTimesFile,
         "partId,startTimeNs,endTimeNs,assemblyTimeNs\n",
         StandardOpenOption.CREATE,
-        StandardOpenOption.WRITE
+        StandardOpenOption.WRITE,
       )
     }
   }
@@ -51,9 +49,7 @@ class EventSubscriber {
 
   @Topic(name = "eAssemblyComplete", pubsubName = "pubsub")
   @PostMapping("/eAssemblyComplete")
-  fun eAssemblyComplete(
-    @RequestBody event: CloudEvent<Map<String, Any>>
-  ): ResponseEntity<Unit> {
+  fun eAssemblyComplete(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
 
     partsCompleted.mark()
 
@@ -63,15 +59,14 @@ class EventSubscriber {
     if (partAssemblyStartTime != null) {
       val emitTime = (event.data["emittedTime"] as Number).toLong()
 
-      val assemblyTime =
-        (emitTime - partAssemblyStartTime).coerceAtLeast(0L)
+      val assemblyTime = (emitTime - partAssemblyStartTime).coerceAtLeast(0L)
 
       synchronized(csvLock) {
         Files.writeString(
           assemblyTimesFile,
           "$partId,$partAssemblyStartTime,$emitTime,$assemblyTime\n",
           StandardOpenOption.CREATE,
-          StandardOpenOption.APPEND
+          StandardOpenOption.APPEND,
         )
       }
     }
@@ -87,8 +82,7 @@ class EventSubscriber {
 
     val partId = (event.data["partId"] as Number).toLong()
 
-    partAssemblyStartTimes[partId] =
-      (event.data["emittedTime"] as Number).toLong()
+    partAssemblyStartTimes[partId] = (event.data["emittedTime"] as Number).toLong()
 
     return ResponseEntity.ok().build()
   }
