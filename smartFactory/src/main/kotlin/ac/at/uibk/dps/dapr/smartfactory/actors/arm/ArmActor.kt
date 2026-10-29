@@ -19,7 +19,5 @@ interface ArmActor {
 
   fun retryTimeout(): Mono<Void>
 
-  fun markPickedUp()
-
   fun armReset()
 }

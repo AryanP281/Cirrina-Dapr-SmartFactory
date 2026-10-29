@@ -132,10 +132,6 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
     if (state == State.IDLE) transition(State.JOB_DONE)
   }
 
-  override fun markPickedUp() {
-    this.pickupSuccess = true
-  }
-
   override fun armReset() {
     transition(State.IDLE)
   }
