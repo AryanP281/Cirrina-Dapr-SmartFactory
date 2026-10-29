@@ -26,6 +26,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
   private var pickupSuccess = true
   private var errorMsg = ""
   private var partsAssembled = 0
+  private var currentPartId = 0L
 
   private val daprClient = DaprClientBuilder().build()
 
@@ -52,6 +53,9 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
 
       State.PICKUP -> {
         if (state == State.IDLE) {
+          if(pickupSuccess)
+              currentPartId = data as Long
+
           state = targetState
           enterPickup()
         }
@@ -91,7 +95,7 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
                 daprClient,
                 "pubsub",
                 "eAssemblyComplete",
-                mutableMapOf<String, Any?>(),
+                mutableMapOf<String, Any?>("partId" to currentPartId),
               )
               .subscribe()
           }
@@ -111,11 +115,11 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
     enterIdle()
   }
 
-  override fun initiatePickup() {
+  override fun initiatePickup(partId : Long) {
     val isJobDone =
       daprClient.getState("statestore", "isJobDone", Boolean::class.java).block()?.value ?: false
 
-    if (!isJobDone) transition(State.PICKUP)
+    if (!isJobDone) transition(State.PICKUP, partId)
   }
 
   override fun updatePickupStatus(pickupStatus: Boolean) {

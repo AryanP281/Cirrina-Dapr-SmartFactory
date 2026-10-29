@@ -57,7 +57,7 @@ class ArmSubscriber : ApplicationListener<ApplicationReadyEvent> {
         ?.get(0)
         ?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.initiatePickup()
+      proxy.initiatePickup((event.data["partId"] as Number).toLong())
     }
 
     //Logging handling time
