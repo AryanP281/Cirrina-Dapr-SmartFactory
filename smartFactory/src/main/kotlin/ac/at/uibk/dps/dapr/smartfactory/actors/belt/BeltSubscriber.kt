@@ -30,7 +30,7 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    proxy.markObjectValidity()
+    proxy.markObjectValidity((event.data["partId"] as Number).toLong())
 
     return ResponseEntity.ok().build()
   }
@@ -41,9 +41,7 @@ class BeltSubscriber {
     @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
-    proxy.startUnloading(
-      (event.data["partId"] as Number).toLong()
-    )
+    proxy.startUnloading()
 
     return ResponseEntity.ok().build()
   }

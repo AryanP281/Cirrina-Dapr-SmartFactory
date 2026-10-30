@@ -125,7 +125,7 @@ class AssemblyControllerActorImpl(
 
     if (scanStatus) {
       // Raise eObjectValid
-      Utils.publishEvent(daprClient, "pubsub", "eObjectValid", mutableMapOf<String, Any?>())
+      Utils.publishEvent(daprClient, "pubsub", "eObjectValid", mutableMapOf<String, Any?>("partId" to nextPartToProcessId))
         .subscribe()
 
       transition(State.DETECTING_END)
@@ -138,14 +138,18 @@ class AssemblyControllerActorImpl(
 
   override fun detectedAtEnd() {
     // Raising eStartUnload
-    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf("partId" to nextPartToProcessId))
+    Utils.publishEvent(daprClient, "pubsub", "eStartUnload", mutableMapOf<String, Any?>())
       .subscribe()
 
     transition(State.UNLOADING)
   }
 
   override fun processPickup() {
-    if (state == State.UNLOADING) transition(State.DETECTING_START)
+    if (state == State.UNLOADING) {
+      Utils.publishEvent(daprClient, "pubsub", "ePartProcessingComplete", mutableMapOf("partId" to nextPartToProcessId))
+        .subscribe()
+      transition(State.DETECTING_START)
+    }
   }
 
   override fun markJobDone() {

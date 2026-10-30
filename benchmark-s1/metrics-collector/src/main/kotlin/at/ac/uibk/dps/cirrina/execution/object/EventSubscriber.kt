@@ -15,16 +15,22 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class EventSubscriber {
 
+  val partAssemblyStartTimes = ConcurrentHashMap<Long, Long>()
+  val assemblyControllerStartTimes = ConcurrentHashMap<Long, Long>()
+  val beltMovementStartTimes = ConcurrentHashMap<Long,Long>()
+
   val partArrivals: Meter = metricsRegistry.meter("partArrivals")
   val partsCompleted: Meter = metricsRegistry.meter("partsCompleted")
-
-  val partAssemblyStartTimes = ConcurrentHashMap<Long, Long>()
 
   private val metricsDir = Path.of("./metrics")
 
   private val assemblyTimesFile = metricsDir.resolve("partAssemblyTimes.csv")
+  val assemblyControllerTimesFile: Path = metricsDir.resolve("assemblyControllerTimes.csv")
+  val beltMovementTimesFile: Path = metricsDir.resolve("beltMovementTimes.csv")
 
-  private val csvLock = Any()
+  private val assemblyTimesCsvLock = Any()
+  val assemblyControllerTimesCsvLock = Any()
+  val beltMovementTimesCsvLock = Any()
 
   init {
     Files.createDirectories(metricsDir)
@@ -33,6 +39,24 @@ class EventSubscriber {
       Files.writeString(
         assemblyTimesFile,
         "partId,startTimeNs,endTimeNs,assemblyTimeNs\n",
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+      )
+    }
+
+    if (!Files.exists(assemblyControllerTimesFile)) {
+      Files.writeString(
+        assemblyControllerTimesFile,
+        "partId,startTimeNs,endTimeNs,assemblyControllerTimeNs\n",
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+      )
+    }
+
+    if (!Files.exists(beltMovementTimesFile)) {
+      Files.writeString(
+        beltMovementTimesFile,
+        "partId,startTimeNs,endTimeNs,beltMovementTimeNs\n",
         StandardOpenOption.CREATE,
         StandardOpenOption.WRITE,
       )
@@ -61,7 +85,7 @@ class EventSubscriber {
 
       val assemblyTime = (emitTime - partAssemblyStartTime).coerceAtLeast(0L)
 
-      synchronized(csvLock) {
+      synchronized(assemblyTimesCsvLock) {
         Files.writeString(
           assemblyTimesFile,
           "$partId,$partAssemblyStartTime,$emitTime,$assemblyTime\n",
@@ -83,6 +107,78 @@ class EventSubscriber {
     val partId = (event.data["partId"] as Number).toLong()
 
     partAssemblyStartTimes[partId] = (event.data["emittedTime"] as Number).toLong()
+    assemblyControllerStartTimes[partId] = (event.data["emittedTime"] as Number).toLong()
+
+    return ResponseEntity.ok().build()
+  }
+
+  @Topic(name = "ePartProcessingComplete", pubsubName = "pubsub")
+  @PostMapping("/ePartProcessingComplete")
+  fun ePartProcessingComplete(
+    @RequestBody event: CloudEvent<Map<String, Any>>
+  ): ResponseEntity<Unit> {
+
+    val partId = (event.data["partId"] as Number).toLong()
+    val partAssemblyStartTime = assemblyControllerStartTimes.remove(partId)
+
+    if(partAssemblyStartTime != null) {
+      val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
+      val assemblyControllerTime = (eventEmitTime - partAssemblyStartTime).coerceAtLeast(0L)
+
+      synchronized(assemblyControllerTimesCsvLock) {
+        Files.writeString(
+          assemblyControllerTimesFile,
+          "$partId,$partAssemblyStartTime,${eventEmitTime},$assemblyControllerTime\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.APPEND,
+        )
+      }
+
+    } else {
+      logger.warn("No assembly start time found for part $partId")
+    }
+
+    return ResponseEntity.ok().build()
+  }
+
+  @Topic(name = "ePartMovementInitiated", pubsubName = "pubsub")
+  @PostMapping("/ePartMovementInitiated")
+  fun ePartMovementInitiated(
+    @RequestBody event: CloudEvent<Map<String, Any>>
+  ): ResponseEntity<Unit> {
+
+    val partId = (event.data["partId"] as Number).toLong()
+
+    beltMovementStartTimes[partId] = (event.data["emittedTime"] as Number).toLong()
+
+    return ResponseEntity.ok().build()
+  }
+
+  @Topic(name = "ePartMovingComplete", pubsubName = "pubsub")
+  @PostMapping("/ePartMovingComplete")
+  fun ePartMovingComplete(
+    @RequestBody event: CloudEvent<Map<String, Any>>
+  ): ResponseEntity<Unit> {
+
+    val partId = (event.data["partId"] as Number).toLong()
+    val partMovementStartTime = beltMovementStartTimes.remove(partId)
+
+    if(partMovementStartTime != null) {
+      val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
+      val movementTime = (eventEmitTime - partMovementStartTime).coerceAtLeast(0L)
+
+      synchronized(beltMovementTimesCsvLock) {
+        Files.writeString(
+          beltMovementTimesFile,
+          "$partId,$partMovementStartTime,${eventEmitTime},$movementTime\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.APPEND,
+        )
+      }
+
+    } else {
+      logger.warn("No movement start time found for part $partId")
+    }
 
     return ResponseEntity.ok().build()
   }
