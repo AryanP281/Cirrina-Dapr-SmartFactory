@@ -34,6 +34,8 @@ class ArmActorImpl(runtimeContext: ActorRuntimeContext<ArmActorImpl>, id: ActorI
     when (targetState) {
       State.IDLE -> {
         if (state == State.RETURN) {
+          Utils.publishEvent(daprClient, "pubsub", "eArmCompletedProcessing", mutableMapOf("partId" to currentPartId)).subscribe()
+
           // Transition Actions
           if (partsAssembled >= partsPerProduct) {
             partsAssembled = 0
