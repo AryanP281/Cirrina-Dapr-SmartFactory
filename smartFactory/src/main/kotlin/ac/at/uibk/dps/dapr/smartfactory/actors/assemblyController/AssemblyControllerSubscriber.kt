@@ -8,6 +8,9 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -28,7 +31,8 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   private val actorId = System.getenv("ACTOR_ID") ?: "assemblycontroller-0"
 
   private val proxy: AssemblyControllerActor =
-    ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
+      ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient())
+          .build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
@@ -36,25 +40,38 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   private val perEventTimers = ConcurrentHashMap<String, ArrayList<Timer>>()
 
+  private val photoCaptureEventTimesFile: Path =
+      Path.of("./metrics").resolve("photoCaptureEventTimes.csv")
+  private val photoCaptureEventTimesCsvLock = Any()
+
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     val inputEvents =
-      arrayOf(
-        "eBeamInterruptedStart",
-        "ePhotoCaptured",
-        "ePhotoScanned",
-        "eObjectDiscarded",
-        "eBeamInterruptedEnd",
-        "ePickedUp",
-        "eJobDone",
-      )
+        arrayOf(
+            "eBeamInterruptedStart",
+            "ePhotoCaptured",
+            "ePhotoScanned",
+            "eObjectDiscarded",
+            "eBeamInterruptedEnd",
+            "ePickedUp",
+            "eJobDone",
+        )
 
     for (inputEvent in inputEvents) {
       perEventTimers[inputEvent] =
-        arrayListOf(
-          metrics.timer("$inputEvent.event.latency"),
-          metrics.timer("$inputEvent.processEvent.time"),
-          metrics.timer("$inputEvent.event.handling"),
-        )
+          arrayListOf(
+              metrics.timer("$inputEvent.event.latency"),
+              metrics.timer("$inputEvent.processEvent.time"),
+              metrics.timer("$inputEvent.event.handling"),
+          )
+    }
+
+    if (!Files.exists(photoCaptureEventTimesFile)) {
+      Files.writeString(
+          photoCaptureEventTimesFile,
+          "eventId,receiveTimeNs\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.WRITE,
+      )
     }
 
     proxy.initialize()
@@ -63,7 +80,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   @Topic(name = "eBeamInterruptedStart", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedStart")
   fun handleBeamInterruptedStart(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
+      @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
     val delta = measureTime {
@@ -96,12 +113,16 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
   @PostMapping("/ePhotoCaptured")
-  fun handlePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePhotoCaptured(
+      @RequestBody event: CloudEvent<Map<String, Any?>>
+  ): ResponseEntity<Unit> {
+
+    val eventReceiveTime = Utils.getCurrentTimeNs()
 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (eventReceiveTime - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
@@ -123,12 +144,23 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
 
+    synchronized(photoCaptureEventTimesCsvLock) {
+      Files.writeString(
+          photoCaptureEventTimesFile,
+          "${event.id},$eventReceiveTime\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.APPEND,
+      )
+    }
+
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
-  fun handlePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePhotoScanned(
+      @RequestBody event: CloudEvent<Map<String, Any?>>
+  ): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
@@ -161,7 +193,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   @Topic(name = "eObjectDiscarded", pubsubName = "pubsub")
   @PostMapping("/eObjectDiscarded")
   fun handleObjectDiscarded(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
+      @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
     val delta = measureTime {
@@ -195,7 +227,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   @Topic(name = "eBeamInterruptedEnd", pubsubName = "pubsub")
   @PostMapping("/eBeamInterruptedEnd")
   fun handleBeamInterruptedEnd(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
+      @RequestBody event: CloudEvent<Map<String, Any?>>
   ): ResponseEntity<Unit> {
 
     val delta = measureTime {
@@ -228,7 +260,9 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handlePickedUp(
+      @RequestBody event: CloudEvent<Map<String, Any?>>
+  ): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
@@ -260,7 +294,9 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
+  fun handleJobDone(
+      @RequestBody event: CloudEvent<Map<String, Any?>>
+  ): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
