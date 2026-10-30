@@ -69,7 +69,7 @@ class BeltSubscriber {
         ?.get(0)
         ?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.markObjectValidity()
+      proxy.markObjectValidity((event.data["partId"] as Number).toLong())
     }
 
     // Logging handling time
@@ -111,7 +111,7 @@ class BeltSubscriber {
         ?.get(0)
         ?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.startUnloading((event.data["partId"] as Number).toLong())
+      proxy.startUnloading()
     }
 
     // Logging handling time

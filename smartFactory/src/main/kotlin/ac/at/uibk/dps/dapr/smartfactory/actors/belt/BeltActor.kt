@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono
 @ActorType(name = "BeltActor")
 interface BeltActor {
 
-  fun markObjectValidity()
+  fun markObjectValidity(partId : Long)
 
-  fun startUnloading(partId : Long)
+  fun startUnloading()
 
   fun markJobDone()
 
