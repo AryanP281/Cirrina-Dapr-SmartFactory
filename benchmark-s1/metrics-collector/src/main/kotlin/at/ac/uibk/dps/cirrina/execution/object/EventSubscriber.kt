@@ -193,23 +193,21 @@ class EventSubscriber {
 
   @Topic(name = "eArmPickup", pubsubName = "pubsub")
   @PostMapping("/eArmPickup")
-  fun eArmPickup(
-    @RequestBody event: CloudEvent<Map<String, Any>>
-  ): ResponseEntity<Unit> {
+  fun eArmPickup(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
 
     val partId = (event.data["partId"] as Number).toLong()
     val emittedTime = (event.data["emittedTime"] as Number).toLong()
 
-    armHandlngStartTimes.merge(partId, emittedTime) { old, new ->
-      minOf(old, new)
-    }
+    armHandlngStartTimes.merge(partId, emittedTime) { old, new -> minOf(old, new) }
 
     return ResponseEntity.ok().build()
   }
 
   @Topic(name = "eArmCompletedProcessing", pubsubName = "pubsub")
   @PostMapping("/eArmCompletedProcessing")
-  fun eArmCompletedProcessing(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
+  fun eArmCompletedProcessing(
+    @RequestBody event: CloudEvent<Map<String, Any>>
+  ): ResponseEntity<Unit> {
 
     val partId = (event.data["partId"] as Number).toLong()
     val partHandlingStartTime = armHandlngStartTimes.remove(partId)
