@@ -50,15 +50,6 @@ val photoPublishTimeFileCsvLock = Any()
 
 fun main() {
   try {
-    if (!Files.exists(photoPyblishTimeFile)) {
-      Files.writeString(
-        photoPyblishTimeFile,
-        "startTimeNs,endTimeNs,publishTimeNs\n",
-        StandardOpenOption.CREATE,
-        StandardOpenOption.WRITE,
-      )
-    }
-
     val httpServer = HttpServer.create(InetSocketAddress(6000), 0)
 
     when (serviceRole) {
@@ -332,6 +323,15 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
 
   val ortSession: OrtSession =
     ortEnv.createSession("models/yolov8n.onnx", OrtSession.SessionOptions())
+
+  if (!Files.exists(photoPyblishTimeFile)) {
+    Files.writeString(
+      photoPyblishTimeFile,
+      "startTimeNs,endTimeNs,publishTimeNs\n",
+      StandardOpenOption.CREATE,
+      StandardOpenOption.WRITE,
+    )
+  }
 
   httpServer.createContext("/takephoto") { exchange ->
     exchange.use { exchange.sendResponseHeaders(200, -1) }
