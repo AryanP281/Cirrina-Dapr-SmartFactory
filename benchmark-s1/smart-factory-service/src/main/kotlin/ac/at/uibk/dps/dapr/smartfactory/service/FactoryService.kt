@@ -327,12 +327,13 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
   if (!Files.exists(photoPyblishTimeFile)) {
     Files.writeString(
       photoPyblishTimeFile,
-      "startTimeNs,endTimeNs,publishTimeNs\n",
+      "id,emitTimeNs,publishStartTimeNs,publishEndTimeNs,publishTimeNs\n",
       StandardOpenOption.CREATE,
       StandardOpenOption.WRITE,
     )
   }
 
+  val photoCaptureEventId = AtomicLong(-1)
   httpServer.createContext("/takephoto") { exchange ->
     exchange.use { exchange.sendResponseHeaders(200, -1) }
 
@@ -354,11 +355,12 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
 
           val emitTime = getEmitTime()
           val publishStartTime = System.nanoTime()
+          val eventId = photoCaptureEventId.incrementAndGet()
           daprClient
             .publishEvent(
               "pubsub",
               photoCapturedTopic,
-              mapOf<String, Any>("data" to imgData, "emittedTime" to emitTime),
+              mapOf<String, Any>("data" to imgData, "emittedTime" to emitTime, "eId" to eventId),
             )
             .doOnSuccess {
               val publishEndTime = System.nanoTime()
@@ -367,7 +369,7 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
               synchronized(photoPublishTimeFileCsvLock) {
                 Files.writeString(
                   photoPyblishTimeFile,
-                  "$publishStartTime,$publishEndTime,$elapsedTime\n",
+                  "$eventId,$emitTime,$publishStartTime,$publishEndTime,$elapsedTime\n",
                   StandardOpenOption.CREATE,
                   StandardOpenOption.APPEND,
                 )

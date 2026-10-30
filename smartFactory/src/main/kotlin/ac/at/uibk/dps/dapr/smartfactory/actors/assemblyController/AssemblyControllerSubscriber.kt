@@ -68,7 +68,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     if (!Files.exists(photoCaptureEventTimesFile)) {
       Files.writeString(
           photoCaptureEventTimesFile,
-          "eventId,receiveTimeNs\n",
+          "cloudEventId,eventId,receiveTimeNs\n",
           StandardOpenOption.CREATE,
           StandardOpenOption.WRITE,
       )
@@ -147,7 +147,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     synchronized(photoCaptureEventTimesCsvLock) {
       Files.writeString(
           photoCaptureEventTimesFile,
-          "${event.id},$eventReceiveTime\n",
+          "${event.id},${(event.data["eId"] as Number).toLong()},$eventReceiveTime\n",
           StandardOpenOption.CREATE,
           StandardOpenOption.APPEND,
       )
