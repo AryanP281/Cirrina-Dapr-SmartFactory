@@ -352,12 +352,13 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
               )
             }
 
+          val emitTime = getEmitTime()
           val publishStartTime = System.nanoTime()
           daprClient
             .publishEvent(
               "pubsub",
               photoCapturedTopic,
-              mapOf<String, Any>("data" to imgData, "emittedTime" to getEmitTime()),
+              mapOf<String, Any>("data" to imgData, "emittedTime" to emitTime),
             )
             .doOnSuccess {
               val publishEndTime = System.nanoTime()
