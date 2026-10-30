@@ -18,7 +18,9 @@ import java.io.ByteArrayInputStream
 import java.net.InetSocketAddress
 import java.nio.FloatBuffer
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadLocalRandom
@@ -42,8 +44,21 @@ val serviceRole =
   System.getenv("SERVICE_ROLE")
     ?: "" // The state-machine role that this process provides services for
 
+val metricsDir = Path.of("./metrics")
+val photoPyblishTimeFile: Path = metricsDir.resolve("photoPublishTimes.csv")
+val photoPublishTimeFileCsvLock = Any()
+
 fun main() {
   try {
+    if (!Files.exists(photoPyblishTimeFile)) {
+      Files.writeString(
+        photoPyblishTimeFile,
+        "startTimeNs,endTimeNs,publishTimeNs\n",
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+      )
+    }
+
     val httpServer = HttpServer.create(InetSocketAddress(6000), 0)
 
     when (serviceRole) {
@@ -337,12 +352,26 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
               )
             }
 
+          val publishStartTime = System.nanoTime()
           daprClient
             .publishEvent(
               "pubsub",
               photoCapturedTopic,
               mapOf<String, Any>("data" to imgData, "emittedTime" to getEmitTime()),
             )
+            .doOnSuccess {
+              val publishEndTime = System.nanoTime()
+              val elapsedTime = publishEndTime - publishStartTime
+
+              synchronized(photoPublishTimeFileCsvLock) {
+                Files.writeString(
+                  photoPyblishTimeFile,
+                  "$publishStartTime,$publishEndTime,$elapsedTime\n",
+                  StandardOpenOption.CREATE,
+                  StandardOpenOption.APPEND,
+                )
+              }
+            }
             .subscribe()
         } catch (exe: Exception) {
           logger.error("Failed to take photo", exe)
