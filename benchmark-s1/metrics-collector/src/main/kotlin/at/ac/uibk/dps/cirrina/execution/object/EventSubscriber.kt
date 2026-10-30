@@ -17,7 +17,7 @@ class EventSubscriber {
 
   val partAssemblyStartTimes = ConcurrentHashMap<Long, Long>()
   val assemblyControllerStartTimes = ConcurrentHashMap<Long, Long>()
-  val beltMovementStartTimes = ConcurrentHashMap<Long,Long>()
+  val beltMovementStartTimes = ConcurrentHashMap<Long, Long>()
 
   val partArrivals: Meter = metricsRegistry.meter("partArrivals")
   val partsCompleted: Meter = metricsRegistry.meter("partsCompleted")
@@ -121,7 +121,7 @@ class EventSubscriber {
     val partId = (event.data["partId"] as Number).toLong()
     val partAssemblyStartTime = assemblyControllerStartTimes.remove(partId)
 
-    if(partAssemblyStartTime != null) {
+    if (partAssemblyStartTime != null) {
       val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
       val assemblyControllerTime = (eventEmitTime - partAssemblyStartTime).coerceAtLeast(0L)
 
@@ -133,7 +133,6 @@ class EventSubscriber {
           StandardOpenOption.APPEND,
         )
       }
-
     } else {
       logger.warn("No assembly start time found for part $partId")
     }
@@ -156,14 +155,12 @@ class EventSubscriber {
 
   @Topic(name = "ePartMovingComplete", pubsubName = "pubsub")
   @PostMapping("/ePartMovingComplete")
-  fun ePartMovingComplete(
-    @RequestBody event: CloudEvent<Map<String, Any>>
-  ): ResponseEntity<Unit> {
+  fun ePartMovingComplete(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
 
     val partId = (event.data["partId"] as Number).toLong()
     val partMovementStartTime = beltMovementStartTimes.remove(partId)
 
-    if(partMovementStartTime != null) {
+    if (partMovementStartTime != null) {
       val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
       val movementTime = (eventEmitTime - partMovementStartTime).coerceAtLeast(0L)
 
@@ -175,7 +172,6 @@ class EventSubscriber {
           StandardOpenOption.APPEND,
         )
       }
-
     } else {
       logger.warn("No movement start time found for part $partId")
     }

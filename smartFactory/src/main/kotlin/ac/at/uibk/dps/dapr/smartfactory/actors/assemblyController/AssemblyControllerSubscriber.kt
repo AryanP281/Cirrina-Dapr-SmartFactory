@@ -28,17 +28,13 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
   private val actorId = System.getenv("ACTOR_ID") ?: "assemblycontroller-0"
 
   private val proxy: AssemblyControllerActor =
-    ActorProxyBuilder(
-      AssemblyControllerActor::class.java,
-      ActorClient()
-    ).build(ActorId(actorId))
+    ActorProxyBuilder(AssemblyControllerActor::class.java, ActorClient()).build(ActorId(actorId))
 
   private val eventTimer: Timer = metrics.timer("event.latency")
   private val processEventTimer: Timer = metrics.timer("processEvent.time")
   private val eventHandlingTimer: Timer = metrics.timer("event.handling")
 
-  private val perEventTimers =
-    ConcurrentHashMap<String, ArrayList<Timer>>()
+  private val perEventTimers = ConcurrentHashMap<String, ArrayList<Timer>>()
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     val inputEvents =
@@ -73,32 +69,24 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["eBeamInterruptedStart"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["eBeamInterruptedStart"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.detectedAtStart()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["eBeamInterruptedStart"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["eBeamInterruptedStart"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["eBeamInterruptedStart"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["eBeamInterruptedStart"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -108,43 +96,29 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
   @PostMapping("/ePhotoCaptured")
-  fun handlePhotoCaptured(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["ePhotoCaptured"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["ePhotoCaptured"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.processCapturedPhoto(
-        Base64.getDecoder().decode(
-          event.data["data"] as? String ?: ""
-        )
-      )
+      proxy.processCapturedPhoto(Base64.getDecoder().decode(event.data["data"] as? String ?: ""))
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["ePhotoCaptured"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["ePhotoCaptured"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["ePhotoCaptured"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["ePhotoCaptured"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -154,41 +128,29 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
-  fun handlePhotoScanned(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["ePhotoScanned"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["ePhotoScanned"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.processPhotoScan(
-        event.data["validObject"] as? Boolean ?: false
-      )
+      proxy.processPhotoScan(event.data["validObject"] as? Boolean ?: false)
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["ePhotoScanned"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["ePhotoScanned"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["ePhotoScanned"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["ePhotoScanned"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -205,32 +167,24 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["eObjectDiscarded"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["eObjectDiscarded"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.objectDiscarded()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["eObjectDiscarded"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["eObjectDiscarded"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["eObjectDiscarded"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["eObjectDiscarded"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -247,32 +201,24 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["eBeamInterruptedEnd"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["eBeamInterruptedEnd"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.detectedAtEnd()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["eBeamInterruptedEnd"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["eBeamInterruptedEnd"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["eBeamInterruptedEnd"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["eBeamInterruptedEnd"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -282,39 +228,29 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun handlePickedUp(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["ePickedUp"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["ePickedUp"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.processPickup()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["ePickedUp"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["ePickedUp"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["ePickedUp"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["ePickedUp"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())
@@ -324,39 +260,29 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun handleJobDone(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["eJobDone"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["eJobDone"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.markJobDone()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["eJobDone"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["eJobDone"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["eJobDone"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["eJobDone"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())

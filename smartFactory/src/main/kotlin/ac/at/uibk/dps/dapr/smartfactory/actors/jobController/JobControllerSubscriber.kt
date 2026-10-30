@@ -36,10 +36,7 @@ class JobControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
   private val perEventTimers = ConcurrentHashMap<String, ArrayList<Timer>>()
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
-    val inputEvents =
-      arrayOf(
-        "eProductComplete",
-      )
+    val inputEvents = arrayOf("eProductComplete")
 
     for (inputEvent in inputEvents) {
       perEventTimers[inputEvent] =
@@ -62,32 +59,24 @@ class JobControllerSubscriber : ApplicationListener<ApplicationReadyEvent> {
     val delta = measureTime {
       // Logging event latency
       val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime =
-        (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+      val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
       eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      perEventTimers["eProductComplete"]
-        ?.get(0)
-        ?.update(deltaTime, TimeUnit.NANOSECONDS)
+      perEventTimers["eProductComplete"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
       proxy.markProductCompleted()
     }
 
     // Logging handling time
     val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime =
-      (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
+    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
 
     eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
 
-    perEventTimers["eProductComplete"]
-      ?.get(1)
-      ?.update(delta.toJavaDuration())
+    perEventTimers["eProductComplete"]?.get(1)?.update(delta.toJavaDuration())
 
-    perEventTimers["eProductComplete"]
-      ?.get(2)
-      ?.update(deltaTime, TimeUnit.NANOSECONDS)
+    perEventTimers["eProductComplete"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
     // Logging event processing time
     processEventTimer.update(delta.toJavaDuration())

@@ -29,7 +29,13 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
     when (targetState) {
       State.LOADING -> {
         if (state == State.UNLOADING) {
-          Utils.publishEvent(daprClient, "pubsub", "ePartMovingComplete", mutableMapOf("partId" to currentPartId)).subscribe()
+          Utils.publishEvent(
+              daprClient,
+              "pubsub",
+              "ePartMovingComplete",
+              mutableMapOf("partId" to currentPartId),
+            )
+            .subscribe()
 
           // Exit actions
           unregisterTimer("armPickupTimeout-${id}").subscribe()
@@ -41,7 +47,13 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
       State.TRANSPORTING -> {
         if (state == State.LOADING) {
           currentPartId = data as Long
-          Utils.publishEvent(daprClient, "pubsub", "ePartMovementInitiated", mutableMapOf("partId" to currentPartId)).subscribe()
+          Utils.publishEvent(
+              daprClient,
+              "pubsub",
+              "ePartMovementInitiated",
+              mutableMapOf("partId" to currentPartId),
+            )
+            .subscribe()
 
           state = State.TRANSPORTING
           enterTransporting()
@@ -75,12 +87,12 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   private fun enterUnloading() {
     // Starting timer for eArmPickup
     registerActorTimer(
-      "armPickupTimeout-${id}",
-      "armPickupTimeout",
-      0,
-      Duration.ofSeconds(0),
-      Duration.ofSeconds(1),
-    )
+        "armPickupTimeout-${id}",
+        "armPickupTimeout",
+        0,
+        Duration.ofSeconds(0),
+        Duration.ofSeconds(1),
+      )
       .subscribe()
   }
 
@@ -103,7 +115,12 @@ class BeltActorImpl(runtimeContext: ActorRuntimeContext<BeltActorImpl>, id: Acto
   override fun armPickupTimeout(): Mono<Void> {
     if (state == State.UNLOADING) {
       // Raising eArmPickup
-      Utils.publishEvent(daprClient, "pubsub", "eArmPickup", mutableMapOf<String, Any?>("partId" to currentPartId))
+      Utils.publishEvent(
+          daprClient,
+          "pubsub",
+          "eArmPickup",
+          mutableMapOf<String, Any?>("partId" to currentPartId),
+        )
         .subscribe()
     }
 

@@ -34,7 +34,13 @@ class AssemblyControllerActorImpl(
     when (targetState) {
       State.CAPTURE_PHOTO -> {
         if (state == State.DETECTING_START) {
-          Utils.publishEvent(daprClient, "pubsub", "ePartAssemblyInitiated", mutableMapOf("partId" to nextPartToProcessId)).subscribe()
+          Utils.publishEvent(
+              daprClient,
+              "pubsub",
+              "ePartAssemblyInitiated",
+              mutableMapOf("partId" to nextPartToProcessId),
+            )
+            .subscribe()
           state = State.CAPTURE_PHOTO
           enterCapturePhoto()
         }
@@ -95,11 +101,11 @@ class AssemblyControllerActorImpl(
   private fun enterError() {
     // Raise eProcessMessage
     Utils.publishEvent(
-      daprClient,
-      "pubsub",
-      "eProcessMessage",
-      mutableMapOf("msg" to "Assembly error: Invalid object detected"),
-    )
+        daprClient,
+        "pubsub",
+        "eProcessMessage",
+        mutableMapOf("msg" to "Assembly error: Invalid object detected"),
+      )
       .subscribe()
 
     Services.discardObject().subscribe()
@@ -125,7 +131,12 @@ class AssemblyControllerActorImpl(
 
     if (scanStatus) {
       // Raise eObjectValid
-      Utils.publishEvent(daprClient, "pubsub", "eObjectValid", mutableMapOf<String, Any?>("partId" to nextPartToProcessId))
+      Utils.publishEvent(
+          daprClient,
+          "pubsub",
+          "eObjectValid",
+          mutableMapOf<String, Any?>("partId" to nextPartToProcessId),
+        )
         .subscribe()
 
       transition(State.DETECTING_END)
@@ -146,7 +157,12 @@ class AssemblyControllerActorImpl(
 
   override fun processPickup() {
     if (state == State.UNLOADING) {
-      Utils.publishEvent(daprClient, "pubsub", "ePartProcessingComplete", mutableMapOf("partId" to nextPartToProcessId))
+      Utils.publishEvent(
+          daprClient,
+          "pubsub",
+          "ePartProcessingComplete",
+          mutableMapOf("partId" to nextPartToProcessId),
+        )
         .subscribe()
       transition(State.DETECTING_START)
     }

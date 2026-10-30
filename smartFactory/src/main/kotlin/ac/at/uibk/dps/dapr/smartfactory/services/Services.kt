@@ -5,14 +5,13 @@ import ac.at.uibk.dps.dapr.smartfactory.api.MessageProcessingRequest
 import ac.at.uibk.dps.dapr.smartfactory.api.PhotoScanRequest
 import ac.at.uibk.dps.dapr.smartfactory.api.StatisticsRequest
 import ac.at.uibk.dps.dapr.smartfactory.metrics
-import ac.at.uibk.dps.dapr.smartfactory.utils.Utils
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.concurrent.TimeUnit
 import org.apache.fory.memory.MemoryBuffer
 import reactor.core.publisher.Mono
-import java.util.concurrent.TimeUnit
 
 object Services {
 
@@ -37,7 +36,7 @@ object Services {
         .POST(HttpRequest.BodyPublishers.ofByteArray(buffer.getBytes(0, buffer.writerIndex())))
         .build()
 
-    client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).whenComplete { _,_ ->
+    client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).whenComplete { _, _ ->
       val invokeTime = System.nanoTime() - startTime
       invokeTimer.update(invokeTime, TimeUnit.NANOSECONDS)
     }
@@ -58,7 +57,7 @@ object Services {
         .POST(HttpRequest.BodyPublishers.ofByteArray(buffer.getBytes(0, buffer.writerIndex())))
         .build()
 
-    client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).whenComplete { _,_ ->
+    client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).whenComplete { _, _ ->
       val invokeTime = System.nanoTime() - startTime
       invokeTimer.update(invokeTime, TimeUnit.NANOSECONDS)
     }
@@ -83,7 +82,7 @@ object Services {
       client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept { response ->
         val invokeTime = System.nanoTime() - startTime
         invokeTimer.update(invokeTime, TimeUnit.NANOSECONDS)
-        }
+      }
     )
   }
 
@@ -150,11 +149,7 @@ object Services {
   fun stopBelt(): Mono<Void> {
     val startTime = System.nanoTime()
 
-    val request =
-      HttpRequest.newBuilder()
-        .uri(URI.create("$baseUrl/stopbelt"))
-        .GET()
-        .build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/stopbelt")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept {
@@ -167,11 +162,7 @@ object Services {
   fun pickUp(): Mono<Void> {
     val startTime = System.nanoTime()
 
-    val request =
-      HttpRequest.newBuilder()
-        .uri(URI.create("$baseUrl/pickup"))
-        .GET()
-        .build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/pickup")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept {
@@ -184,11 +175,7 @@ object Services {
   fun assemble(): Mono<Void> {
     val startTime = System.nanoTime()
 
-    val request =
-      HttpRequest.newBuilder()
-        .uri(URI.create("$baseUrl/assemble"))
-        .GET()
-        .build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/assemble")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept {
@@ -201,11 +188,7 @@ object Services {
   fun returnToStart(): Mono<Void> {
     val startTime = System.nanoTime()
 
-    val request =
-      HttpRequest.newBuilder()
-        .uri(URI.create("$baseUrl/returntostart"))
-        .GET()
-        .build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/returntostart")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept {
