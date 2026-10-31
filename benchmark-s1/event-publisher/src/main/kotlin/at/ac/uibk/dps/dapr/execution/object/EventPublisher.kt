@@ -47,8 +47,6 @@ fun main() {
     .addShutdownHook(
       Thread {
         try {
-          subscriptionServer.stop(0)
-
           executorService.shutdown()
 
           if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) executorService.shutdownNow()
