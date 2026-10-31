@@ -69,7 +69,6 @@ fun main() {
   latch.await()
 
   executorService.shutdownNow()
-  subscriptionServer.stop(0)
   daprClient.close()
 }
 
