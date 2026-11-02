@@ -1,6 +1,5 @@
 package ac.at.uibk.dps.dapr.smartfactory.actors.assemblyController
 
-import ac.at.uibk.dps.dapr.smartfactory.api.PhotoScanRequest
 import ac.at.uibk.dps.dapr.smartfactory.services.Services
 import ac.at.uibk.dps.dapr.smartfactory.utils.Utils
 import io.dapr.actors.ActorId
@@ -15,8 +14,7 @@ class AssemblyControllerActorImpl(
 
   enum class State {
     DETECTING_START,
-    CAPTURE_PHOTO,
-    SCAN_PHOTO,
+    SCAN_PART,
     ERROR,
     DETECTING_END,
     UNLOADING,
@@ -32,7 +30,7 @@ class AssemblyControllerActorImpl(
 
   private fun transition(targetState: State, data: Any? = null) {
     when (targetState) {
-      State.CAPTURE_PHOTO -> {
+      State.SCAN_PART -> {
         if (state == State.DETECTING_START) {
           Utils.publishEvent(
               daprClient,
@@ -41,24 +39,18 @@ class AssemblyControllerActorImpl(
               mutableMapOf("partId" to nextPartToProcessId),
             )
             .subscribe()
-          state = State.CAPTURE_PHOTO
-          enterCapturePhoto()
-        }
-      }
 
-      State.SCAN_PHOTO -> {
-        if (state == State.CAPTURE_PHOTO) {
-          state = State.SCAN_PHOTO
-          enterScanPhoto(data as ByteArray)
+          state = State.SCAN_PART
+          enterScanPart()
         }
       }
 
       State.DETECTING_END -> {
-        if (state == State.SCAN_PHOTO) state = State.DETECTING_END
+        if (state == State.SCAN_PART) state = State.DETECTING_END
       }
 
       State.ERROR -> {
-        if (state == State.SCAN_PHOTO) {
+        if (state == State.SCAN_PART) {
           state = State.ERROR
           enterError()
         }
@@ -84,18 +76,13 @@ class AssemblyControllerActorImpl(
 
   private fun enterDetectingStart() {
     if ((nextReceivedPartId - nextPartToProcessId) > 0) {
-      transition(State.CAPTURE_PHOTO)
+      transition(State.SCAN_PART)
     }
   }
 
-  private fun enterCapturePhoto() {
-    // Invoking photo capture service
-    Services.takePhoto().subscribe()
-  }
-
-  private fun enterScanPhoto(photoData: ByteArray) {
+  private fun enterScanPart() {
     // Invoking photo scan service
-    Services.scanPhoto(PhotoScanRequest(photoData)).subscribe()
+    Services.scanPart().subscribe()
   }
 
   private fun enterError() {
@@ -118,14 +105,10 @@ class AssemblyControllerActorImpl(
   override fun detectedAtStart() {
     nextReceivedPartId += 1
 
-    transition(State.CAPTURE_PHOTO)
+    transition(State.SCAN_PART)
   }
 
-  override fun processCapturedPhoto(photoData: ByteArray) {
-    transition(State.SCAN_PHOTO, photoData)
-  }
-
-  override fun processPhotoScan(scanStatus: Boolean) {
+  override fun processPartScan(scanStatus: Boolean) {
     // Raising eScanned
     Utils.publishEvent(daprClient, "pubsub", "eScanned", mutableMapOf<String, Any?>()).subscribe()
 

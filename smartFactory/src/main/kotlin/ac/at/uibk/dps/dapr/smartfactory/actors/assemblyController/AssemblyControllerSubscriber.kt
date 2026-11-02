@@ -8,10 +8,6 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardOpenOption
-import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.time.measureTime
@@ -39,15 +35,10 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
   private val perEventTimers = ConcurrentHashMap<String, ArrayList<Timer>>()
 
-  private val photoCaptureEventTimesFile: Path =
-    Path.of("./metrics").resolve("photoCaptureEventTimes.csv")
-  private val photoCaptureEventTimesCsvLock = Any()
-
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     val inputEvents =
       arrayOf(
         "eBeamInterruptedStart",
-        "ePhotoCaptured",
         "ePhotoScanned",
         "eObjectDiscarded",
         "eBeamInterruptedEnd",
@@ -62,15 +53,6 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
           metrics.timer("$inputEvent.processEvent.time"),
           metrics.timer("$inputEvent.event.handling"),
         )
-    }
-
-    if (!Files.exists(photoCaptureEventTimesFile)) {
-      Files.writeString(
-        photoCaptureEventTimesFile,
-        "cloudEventId,eventId,receiveTimeNs\n",
-        StandardOpenOption.CREATE,
-        StandardOpenOption.WRITE,
-      )
     }
 
     proxy.initialize()
@@ -110,49 +92,6 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
     return ResponseEntity.ok().build()
   }
 
-  @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
-  @PostMapping("/ePhotoCaptured")
-  fun handlePhotoCaptured(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
-
-    val eventReceiveTime = Utils.getCurrentTimeNs()
-
-    val delta = measureTime {
-      // Logging event latency
-      val eventEmitTime = event.data["emittedTime"]!! as Long
-      val deltaTime = (eventReceiveTime - eventEmitTime).coerceAtLeast(0)
-
-      eventTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      perEventTimers["ePhotoCaptured"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-      proxy.processCapturedPhoto(Base64.getDecoder().decode(event.data["data"] as? String ?: ""))
-    }
-
-    // Logging handling time
-    val eventEmitTime = event.data["emittedTime"]!! as Long
-    val deltaTime = (Utils.getCurrentTimeNs() - eventEmitTime).coerceAtLeast(0)
-
-    eventHandlingTimer.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    perEventTimers["ePhotoCaptured"]?.get(1)?.update(delta.toJavaDuration())
-
-    perEventTimers["ePhotoCaptured"]?.get(2)?.update(deltaTime, TimeUnit.NANOSECONDS)
-
-    // Logging event processing time
-    processEventTimer.update(delta.toJavaDuration())
-
-    synchronized(photoCaptureEventTimesCsvLock) {
-      Files.writeString(
-        photoCaptureEventTimesFile,
-        "${event.id},${(event.data["eId"] as Number).toLong()},$eventReceiveTime\n",
-        StandardOpenOption.CREATE,
-        StandardOpenOption.APPEND,
-      )
-    }
-
-    return ResponseEntity.ok().build()
-  }
-
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
   fun handlePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
@@ -166,7 +105,7 @@ class AssemblyControllerSubscriber : ApplicationListener<ApplicationReadyEvent> 
 
       perEventTimers["ePhotoScanned"]?.get(0)?.update(deltaTime, TimeUnit.NANOSECONDS)
 
-      proxy.processPhotoScan(event.data["validObject"] as? Boolean ?: false)
+      proxy.processPartScan(event.data["validObject"] as? Boolean ?: false)
     }
 
     // Logging handling time

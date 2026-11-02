@@ -2,7 +2,6 @@ package ac.at.uibk.dps.dapr.smartfactory.services
 
 import ac.at.uibk.dps.dapr.smartfactory.api.ForyConfig
 import ac.at.uibk.dps.dapr.smartfactory.api.MessageProcessingRequest
-import ac.at.uibk.dps.dapr.smartfactory.api.PhotoScanRequest
 import ac.at.uibk.dps.dapr.smartfactory.api.StatisticsRequest
 import ac.at.uibk.dps.dapr.smartfactory.metrics
 import java.net.URI
@@ -86,31 +85,10 @@ object Services {
     )
   }
 
-  fun takePhoto(): Mono<Void> {
+  fun scanPart(): Mono<Void> {
     val startTime = System.nanoTime()
 
-    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/takephoto")).GET().build()
-
-    return Mono.fromFuture(
-      client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept { response ->
-        val invokeTime = System.nanoTime() - startTime
-        invokeTimer.update(invokeTime, TimeUnit.NANOSECONDS)
-      }
-    )
-  }
-
-  fun scanPhoto(req: PhotoScanRequest): Mono<Void> {
-    val startTime = System.nanoTime()
-
-    val buffer = threadBuffer.get().apply { writerIndex(0) }
-    fory.serialize(buffer, req)
-
-    val request =
-      HttpRequest.newBuilder()
-        .uri(URI.create("$baseUrl/scanphoto"))
-        .header("Content-Type", "application/x-fury")
-        .POST(HttpRequest.BodyPublishers.ofByteArray(buffer.getBytes(0, buffer.writerIndex())))
-        .build()
+    val request = HttpRequest.newBuilder().uri(URI.create("$baseUrl/scanpart")).GET().build()
 
     return Mono.fromFuture(
       client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept { response ->

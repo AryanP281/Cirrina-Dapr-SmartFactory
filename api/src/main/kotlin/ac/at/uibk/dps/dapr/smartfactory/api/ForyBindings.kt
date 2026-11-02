@@ -10,7 +10,3 @@ data class StatisticsRequest(
   val productsCompleted: Int,
   val jobDone: Boolean,
 )
-
-data class PhotoScanResponse(val validObject: Boolean)
-
-data class PhotoScanRequest(val photoData: ByteArray)

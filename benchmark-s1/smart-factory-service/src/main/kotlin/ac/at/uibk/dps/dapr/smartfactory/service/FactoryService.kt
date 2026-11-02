@@ -2,7 +2,6 @@ package ac.at.uibk.dps.dapr.smartfactory.service
 
 import ac.at.uibk.dps.dapr.smartfactory.api.ForyConfig
 import ac.at.uibk.dps.dapr.smartfactory.api.MessageProcessingRequest
-import ac.at.uibk.dps.dapr.smartfactory.api.PhotoScanRequest
 import ac.at.uibk.dps.dapr.smartfactory.api.StatisticsRequest
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
@@ -18,9 +17,7 @@ import java.io.ByteArrayInputStream
 import java.net.InetSocketAddress
 import java.nio.FloatBuffer
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ThreadLocalRandom
@@ -43,10 +40,6 @@ val logger = LoggerFactory.getLogger("ac.at.uibk.dps.dapr.smartfactory.service.F
 val serviceRole =
   System.getenv("SERVICE_ROLE")
     ?: "" // The state-machine role that this process provides services for
-
-val metricsDir = Path.of("./metrics")
-val photoPyblishTimeFile: Path = metricsDir.resolve("photoPublishTimes.csv")
-val photoPublishTimeFileCsvLock = Any()
 
 fun main() {
   try {
@@ -295,9 +288,8 @@ fun registerArmEndpoints(httpServer: HttpServer) {
 }
 
 fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
-  val photocaptureTimeMs: Long = 500L
 
-  val photoScanTimeMs: Long = 700L
+  val partScanTimeMs: Long = 1200L
 
   val validObjProb: Double = 1.0
 
@@ -309,13 +301,9 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
   val invalidObjectImageNames: Array<String> =
     arrayOf("test3.png", "test4.png", "test7.png", "test8.png")
 
-  val photoCapturedTopic = "ePhotoCaptured"
-
   val photoScannedTopic = "ePhotoScanned"
 
   val objectDisposalTopic = "eObjectDiscarded"
-
-  val fory: ThreadSafeFory = ForyConfig.fory
 
   val daprClient = DaprClientBuilder().build()
 
@@ -324,17 +312,7 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
   val ortSession: OrtSession =
     ortEnv.createSession("models/yolov8n.onnx", OrtSession.SessionOptions())
 
-  if (!Files.exists(photoPyblishTimeFile)) {
-    Files.writeString(
-      photoPyblishTimeFile,
-      "id,emitTimeNs,publishStartTimeNs,publishEndTimeNs,publishTimeNs\n",
-      StandardOpenOption.CREATE,
-      StandardOpenOption.WRITE,
-    )
-  }
-
-  val photoCaptureEventId = AtomicLong(-1)
-  httpServer.createContext("/takephoto") { exchange ->
+  httpServer.createContext("/scanpart") { exchange ->
     exchange.use { exchange.sendResponseHeaders(200, -1) }
 
     executorService.schedule(
@@ -343,88 +321,30 @@ fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
           val rand = ThreadLocalRandom.current().nextDouble()
 
           val imgData: ByteArray =
-            if (rand <= validObjProb) {
+            if (rand <= validObjProb)
               Files.readAllBytes(
                 Paths.get("imgs", "valid", validObjectImageNames[(rand * 100).toInt() % 4])
               )
-            } else {
+            else
               Files.readAllBytes(
                 Paths.get("imgs", "invalid", invalidObjectImageNames[(rand * 100).toInt() % 4])
               )
-            }
+          val validObj = detectPart(imgData, intArrayOf(640, 640), ortEnv, ortSession)
 
-          val emitTime = getEmitTime()
-          val publishStartTime = System.nanoTime()
-          val eventId = photoCaptureEventId.incrementAndGet()
           daprClient
             .publishEvent(
               "pubsub",
-              photoCapturedTopic,
-              mapOf<String, Any>("data" to imgData, "emittedTime" to emitTime, "eId" to eventId),
+              photoScannedTopic,
+              mapOf<String, Any>("validObject" to validObj, "emittedTime" to getEmitTime()),
             )
-            .doOnSuccess {
-              val publishEndTime = System.nanoTime()
-              val elapsedTime = publishEndTime - publishStartTime
-
-              synchronized(photoPublishTimeFileCsvLock) {
-                Files.writeString(
-                  photoPyblishTimeFile,
-                  "$eventId,$emitTime,$publishStartTime,$publishEndTime,$elapsedTime\n",
-                  StandardOpenOption.CREATE,
-                  StandardOpenOption.APPEND,
-                )
-              }
-            }
             .subscribe()
         } catch (exe: Exception) {
-          logger.error("Failed to take photo", exe)
+          logger.error("Failed to scan part", exe)
         }
       },
-      photocaptureTimeMs,
+      partScanTimeMs,
       TimeUnit.MILLISECONDS,
     )
-  }
-
-  httpServer.createContext("/scanphoto") { exchange ->
-    exchange.use {
-      try {
-        val request = fory.deserialize(exchange.requestBody.readAllBytes()) as PhotoScanRequest
-
-        val input = request.photoData
-
-        if (input.isEmpty()) throw IllegalArgumentException("Invalid input")
-
-        executorService.schedule(
-          {
-            try {
-              val validObj = detectPart(input, intArrayOf(640, 640), ortEnv, ortSession)
-
-              daprClient
-                .publishEvent(
-                  "pubsub",
-                  photoScannedTopic,
-                  mapOf<String, Any>("validObject" to validObj, "emittedTime" to getEmitTime()),
-                )
-                .subscribe()
-            } catch (exe: Exception) {
-              logger.error("Failed to scan photo", exe)
-            }
-          },
-          photoScanTimeMs,
-          TimeUnit.MILLISECONDS,
-        )
-
-        exchange.sendResponseHeaders(200, -1)
-      } catch (exe: IllegalArgumentException) {
-        logger.error("Failed to scan photo", exe)
-
-        exchange.sendResponseHeaders(400, -1)
-      } catch (exe: Exception) {
-        logger.error("Failed to scan photo", exe)
-
-        exchange.sendResponseHeaders(500, -1)
-      }
-    }
   }
 
   httpServer.createContext("/discardobject") { exchange ->
