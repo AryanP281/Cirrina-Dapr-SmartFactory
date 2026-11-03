@@ -10,9 +10,7 @@ interface AssemblyControllerActor {
 
   fun detectedAtStart()
 
-  fun processCapturedPhoto(photoData: ByteArray)
-
-  fun processPhotoScan(scanStatus: Boolean)
+  fun processPartScan(scanStatus: Boolean)
 
   fun objectDiscarded()
 

@@ -10,7 +10,5 @@ object ForyConfig {
         register(EmptyRequest::class.java)
         register(StatisticsRequest::class.java)
         register(MessageProcessingRequest::class.java)
-        register(PhotoScanResponse::class.java)
-        register(PhotoScanRequest::class.java)
         }
 }

@@ -39,8 +39,6 @@ val latch = CountDownLatch(1)
 fun main() {
   logger.info("Part arrival rate = $PART_ARRIVAL_RATE_PER_SEC/sec")
 
-  val subscriptionServer = startSubscriptionServer()
-
   val startTime = System.nanoTime() + (PUBLISH_START_DELAY_MS * 1_000_000L)
 
   scheduleNextArrival(startTime.toDouble())
@@ -49,8 +47,6 @@ fun main() {
     .addShutdownHook(
       Thread {
         try {
-          subscriptionServer.stop(0)
-
           executorService.shutdown()
 
           if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) executorService.shutdownNow()
@@ -71,7 +67,6 @@ fun main() {
   latch.await()
 
   executorService.shutdownNow()
-  subscriptionServer.stop(0)
   daprClient.close()
 }
 

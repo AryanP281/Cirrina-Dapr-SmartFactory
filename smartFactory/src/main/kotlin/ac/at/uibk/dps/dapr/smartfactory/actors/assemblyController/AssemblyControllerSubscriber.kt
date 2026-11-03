@@ -5,7 +5,6 @@ import io.dapr.actors.ActorId
 import io.dapr.actors.client.ActorClient
 import io.dapr.actors.client.ActorProxyBuilder
 import io.dapr.client.domain.CloudEvent
-import java.util.Base64
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
@@ -43,30 +42,11 @@ class AssemblyControllerSubscriber :
     return ResponseEntity.ok().build()
   }
 
-  @Topic(name = "ePhotoCaptured", pubsubName = "pubsub")
-  @PostMapping("/ePhotoCaptured")
-  fun handlePhotoCaptured(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
-
-    proxy.processCapturedPhoto(
-      Base64.getDecoder().decode(
-        event.data["data"] as? String ?: ""
-      )
-    )
-
-    return ResponseEntity.ok().build()
-  }
-
   @Topic(name = "ePhotoScanned", pubsubName = "pubsub")
   @PostMapping("/ePhotoScanned")
-  fun handlePhotoScanned(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePhotoScanned(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
-    proxy.processPhotoScan(
-      event.data["validObject"] as? Boolean ?: false
-    )
+    proxy.processPartScan(event.data["validObject"] as? Boolean ?: false)
 
     return ResponseEntity.ok().build()
   }
@@ -95,9 +75,7 @@ class AssemblyControllerSubscriber :
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun handlePickedUp(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.processPickup()
 
@@ -106,9 +84,7 @@ class AssemblyControllerSubscriber :
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun handleJobDone(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.markJobDone()
 

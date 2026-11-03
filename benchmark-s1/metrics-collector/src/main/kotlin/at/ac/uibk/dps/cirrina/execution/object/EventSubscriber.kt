@@ -17,7 +17,8 @@ class EventSubscriber {
 
   val partAssemblyStartTimes = ConcurrentHashMap<Long, Long>()
   val assemblyControllerStartTimes = ConcurrentHashMap<Long, Long>()
-  val beltMovementStartTimes = ConcurrentHashMap<Long,Long>()
+  val beltMovementStartTimes = ConcurrentHashMap<Long, Long>()
+  val armHandlngStartTimes = ConcurrentHashMap<Long, Long>()
 
   val partArrivals: Meter = metricsRegistry.meter("partArrivals")
   val partsCompleted: Meter = metricsRegistry.meter("partsCompleted")
@@ -27,10 +28,12 @@ class EventSubscriber {
   private val assemblyTimesFile = metricsDir.resolve("partAssemblyTimes.csv")
   val assemblyControllerTimesFile: Path = metricsDir.resolve("assemblyControllerTimes.csv")
   val beltMovementTimesFile: Path = metricsDir.resolve("beltMovementTimes.csv")
+  val armHandlingTimesFile: Path = metricsDir.resolve("armHandlingTimes.csv")
 
   private val assemblyTimesCsvLock = Any()
   val assemblyControllerTimesCsvLock = Any()
   val beltMovementTimesCsvLock = Any()
+  val armHandlingTimesCsvLock = Any()
 
   init {
     Files.createDirectories(metricsDir)
@@ -57,6 +60,15 @@ class EventSubscriber {
       Files.writeString(
         beltMovementTimesFile,
         "partId,startTimeNs,endTimeNs,beltMovementTimeNs\n",
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+      )
+    }
+
+    if (!Files.exists(armHandlingTimesFile)) {
+      Files.writeString(
+        armHandlingTimesFile,
+        "partId,startTimeNs,endTimeNs,armHandlingTimeNs\n",
         StandardOpenOption.CREATE,
         StandardOpenOption.WRITE,
       )
@@ -121,7 +133,7 @@ class EventSubscriber {
     val partId = (event.data["partId"] as Number).toLong()
     val partAssemblyStartTime = assemblyControllerStartTimes.remove(partId)
 
-    if(partAssemblyStartTime != null) {
+    if (partAssemblyStartTime != null) {
       val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
       val assemblyControllerTime = (eventEmitTime - partAssemblyStartTime).coerceAtLeast(0L)
 
@@ -133,7 +145,6 @@ class EventSubscriber {
           StandardOpenOption.APPEND,
         )
       }
-
     } else {
       logger.warn("No assembly start time found for part $partId")
     }
@@ -156,14 +167,12 @@ class EventSubscriber {
 
   @Topic(name = "ePartMovingComplete", pubsubName = "pubsub")
   @PostMapping("/ePartMovingComplete")
-  fun ePartMovingComplete(
-    @RequestBody event: CloudEvent<Map<String, Any>>
-  ): ResponseEntity<Unit> {
+  fun ePartMovingComplete(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
 
     val partId = (event.data["partId"] as Number).toLong()
     val partMovementStartTime = beltMovementStartTimes.remove(partId)
 
-    if(partMovementStartTime != null) {
+    if (partMovementStartTime != null) {
       val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
       val movementTime = (eventEmitTime - partMovementStartTime).coerceAtLeast(0L)
 
@@ -175,9 +184,48 @@ class EventSubscriber {
           StandardOpenOption.APPEND,
         )
       }
-
     } else {
       logger.warn("No movement start time found for part $partId")
+    }
+
+    return ResponseEntity.ok().build()
+  }
+
+  @Topic(name = "eArmPickup", pubsubName = "pubsub")
+  @PostMapping("/eArmPickup")
+  fun eArmPickup(@RequestBody event: CloudEvent<Map<String, Any>>): ResponseEntity<Unit> {
+
+    val partId = (event.data["partId"] as Number).toLong()
+    val emittedTime = (event.data["emittedTime"] as Number).toLong()
+
+    armHandlngStartTimes.merge(partId, emittedTime) { old, new -> minOf(old, new) }
+
+    return ResponseEntity.ok().build()
+  }
+
+  @Topic(name = "eArmCompletedProcessing", pubsubName = "pubsub")
+  @PostMapping("/eArmCompletedProcessing")
+  fun eArmCompletedProcessing(
+    @RequestBody event: CloudEvent<Map<String, Any>>
+  ): ResponseEntity<Unit> {
+
+    val partId = (event.data["partId"] as Number).toLong()
+    val partHandlingStartTime = armHandlngStartTimes.remove(partId)
+
+    if (partHandlingStartTime != null) {
+      val eventEmitTime = (event.data["emittedTime"] as Number).toLong()
+      val handlingTime = (eventEmitTime - partHandlingStartTime).coerceAtLeast(0L)
+
+      synchronized(armHandlingTimesCsvLock) {
+        Files.writeString(
+          armHandlingTimesFile,
+          "$partId,$partHandlingStartTime,${eventEmitTime},$handlingTime\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.APPEND,
+        )
+      }
+    } else {
+      logger.warn("No handling start time found for part $partId")
     }
 
     return ResponseEntity.ok().build()

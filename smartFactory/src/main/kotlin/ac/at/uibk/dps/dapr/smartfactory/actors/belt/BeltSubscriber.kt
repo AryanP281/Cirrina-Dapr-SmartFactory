@@ -26,9 +26,7 @@ class BeltSubscriber {
 
   @Topic(name = "eObjectValid", pubsubName = "pubsub")
   @PostMapping("/eObjectValid")
-  fun handleObjectValid(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handleObjectValid(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.markObjectValidity((event.data["partId"] as Number).toLong())
 
@@ -37,9 +35,7 @@ class BeltSubscriber {
 
   @Topic(name = "eStartUnload", pubsubName = "pubsub")
   @PostMapping("/eStartUnload")
-  fun handleStartUnload(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handleStartUnload(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.startUnloading()
 
@@ -48,9 +44,7 @@ class BeltSubscriber {
 
   @Topic(name = "ePickedUp", pubsubName = "pubsub")
   @PostMapping("/ePickedUp")
-  fun handlePickedUp(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handlePickedUp(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.markPickedUp()
 
@@ -59,9 +53,7 @@ class BeltSubscriber {
 
   @Topic(name = "eJobDone", pubsubName = "pubsub")
   @PostMapping("/eJobDone")
-  fun handleJobDone(
-    @RequestBody event: CloudEvent<Map<String, Any?>>
-  ): ResponseEntity<Unit> {
+  fun handleJobDone(@RequestBody event: CloudEvent<Map<String, Any?>>): ResponseEntity<Unit> {
 
     proxy.markJobDone()
 
