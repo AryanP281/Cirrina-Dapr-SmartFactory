@@ -134,7 +134,7 @@ fun registerMessageProcessorEndpoints(httpServer: HttpServer) {
 }
 
 fun registerBeltEndpoints(httpServer: HttpServer) {
-  val beltMovementTimeMs: Long = 400L
+  val beltMovementTimeMs: Long = 0 // 400L
 
   val endBeamInterruptionTopic = "eBeamInterruptedEnd"
 
@@ -183,11 +183,11 @@ fun registerArmEndpoints(httpServer: HttpServer) {
 
   val assemblyMaxFailureProb: Double = 0.0
 
-  val pickupTimeMs: Long = 100L
+  val pickupTimeMs: Long = 0 // 100L
 
-  val assemblyTimeMs: Long = 1000L
+  val assemblyTimeMs: Long = 0 // 1000L
 
-  val armResetTimeMs: Long = 500L
+  val armResetTimeMs: Long = 0 // 500L
 
   val armPickupTopic = "eUpdatePickupStatus"
 
@@ -289,11 +289,11 @@ fun registerArmEndpoints(httpServer: HttpServer) {
 
 fun registerAssemblyControllerEndpoints(httpServer: HttpServer) {
 
-  val partScanTimeMs: Long = 1200L
+  val partScanTimeMs: Long = 0 // 1200L
 
   val validObjProb: Double = 1.0
 
-  val beltMovementTimeMs: Long = 400L
+  val beltMovementTimeMs: Long = 0 // 400L
 
   val validObjectImageNames: Array<String> =
     arrayOf("test.png", "test2.png", "test5.png", "test6.png")
